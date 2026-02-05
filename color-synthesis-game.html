@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Synthèse des Couleurs</title>
+    
+    <!-- React et React DOM depuis CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel pour transformer JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Style pour les sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 2px solid #4b5563;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 2px solid #4b5563;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const ColorSynthesis = () => {
+          const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+          useEffect(() => {
+            const handleResize = () => setWindowWidth(window.innerWidth);
+            window.addEventListener('resize', handleResize);
+            return () => window.removeEventListener('resize', handleResize);
+          }, []);
+          
+          const [circles, setCircles] = useState([
+            { id: 'red', x: 150, y: 200, color: 'rgb(255, 0, 0)', label: 'Rouge', intensity: 255 },
+            { id: 'green', x: 350, y: 200, color: 'rgb(0, 255, 0)', label: 'Vert', intensity: 255 },
+            { id: 'blue', x: 250, y: 350, color: 'rgb(0, 0, 255)', label: 'Bleu', intensity: 255 }
+          ]);
+          const [showLabels, setShowLabels] = useState(true);
+          const [sampledColor, setSampledColor] = useState({ r: 0, g: 0, b: 0 });
+          const [isSubtractive, setIsSubtractive] = useState(false);
+          
+          const samplePoint = { x: 300, y: 250 };
+          
+          const [dragging, setDragging] = useState(null);
+          const radius = 80;
+
+          const handleMouseDown = (id) => {
+            setDragging(id);
+          };
+
+          const handleMouseMove = (e) => {
+            if (!dragging) return;
+            
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            setCircles(circles.map(circle => 
+              circle.id === dragging ? { ...circle, x, y } : circle
+            ));
+          };
+
+          const calculateColorAtPoint = () => {
+            if (isSubtractive) {
+              let r = 255, g = 255, b = 255;
+              
+              circles.forEach(circle => {
+                const dx = samplePoint.x - circle.x;
+                const dy = samplePoint.y - circle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance <= radius) {
+                  const circleColor = getCircleColorRGB(circle);
+                  const opacity = 0.85;
+                  r = r * (1 - opacity + opacity * (circleColor.r / 255));
+                  g = g * (1 - opacity + opacity * (circleColor.g / 255));
+                  b = b * (1 - opacity + opacity * (circleColor.b / 255));
+                }
+              });
+              
+              return { 
+                r: Math.max(0, Math.min(255, Math.round(r))), 
+                g: Math.max(0, Math.min(255, Math.round(g))), 
+                b: Math.max(0, Math.min(255, Math.round(b))) 
+              };
+            } else {
+              let r = 0, g = 0, b = 0;
+              
+              circles.forEach(circle => {
+                const dx = samplePoint.x - circle.x;
+                const dy = samplePoint.y - circle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance <= radius) {
+                  if (circle.id === 'red') r = circle.intensity;
+                  if (circle.id === 'green') g = circle.intensity;
+                  if (circle.id === 'blue') b = circle.intensity;
+                }
+              });
+              
+              return { r, g, b };
+            }
+          };
+
+          const getCircleColorRGB = (circle) => {
+            if (isSubtractive) {
+              const amount = circle.intensity;
+              if (circle.id === 'red') return { r: 255 - amount, g: 255, b: 255 };
+              if (circle.id === 'green') return { r: 255, g: 255 - amount, b: 255 };
+              if (circle.id === 'blue') return { r: 255, g: 255, b: 255 - amount };
+            } else {
+              if (circle.id === 'red') return { r: circle.intensity, g: 0, b: 0 };
+              if (circle.id === 'green') return { r: 0, g: circle.intensity, b: 0 };
+              if (circle.id === 'blue') return { r: 0, g: 0, b: circle.intensity };
+            }
+            return { r: 0, g: 0, b: 0 };
+          };
+
+          useEffect(() => {
+            setSampledColor(calculateColorAtPoint());
+          }, [circles, isSubtractive]);
+
+          const rgbToHex = (r, g, b) => {
+            return '#' + [r, g, b].map(x => {
+              const hex = x.toString(16);
+              return hex.length === 1 ? '0' + hex : hex;
+            }).join('').toUpperCase();
+          };
+
+          const rgbToCmyk = (r, g, b) => {
+            const rNorm = r / 255;
+            const gNorm = g / 255;
+            const bNorm = b / 255;
+            
+            const k = 1 - Math.max(rNorm, gNorm, bNorm);
+            const c = k === 1 ? 0 : (1 - rNorm - k) / (1 - k);
+            const m = k === 1 ? 0 : (1 - gNorm - k) / (1 - k);
+            const y = k === 1 ? 0 : (1 - bNorm - k) / (1 - k);
+            
+            return {
+              c: Math.round(c * 100),
+              m: Math.round(m * 100),
+              y: Math.round(y * 100),
+              k: Math.round(k * 100)
+            };
+          };
+
+          const rgbToHsl = (r, g, b) => {
+            const rNorm = r / 255;
+            const gNorm = g / 255;
+            const bNorm = b / 255;
+            
+            const max = Math.max(rNorm, gNorm, bNorm);
+            const min = Math.min(rNorm, gNorm, bNorm);
+            const delta = max - min;
+            
+            const l = (max + min) / 2;
+            
+            let s = 0;
+            if (delta !== 0) {
+              s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+            }
+            
+            let h = 0;
+            if (delta !== 0) {
+              if (max === rNorm) {
+                h = ((gNorm - bNorm) / delta + (gNorm < bNorm ? 6 : 0)) / 6;
+              } else if (max === gNorm) {
+                h = ((bNorm - rNorm) / delta + 2) / 6;
+              } else {
+                h = ((rNorm - gNorm) / delta + 4) / 6;
+              }
+            }
+            
+            return {
+              h: Math.round(h * 360),
+              s: Math.round(s * 100),
+              l: Math.round(l * 100)
+            };
+          };
+
+          const handleMouseUp = () => {
+            setDragging(null);
+          };
+
+          const handleTouchStart = (id) => {
+            setDragging(id);
+          };
+
+          const handleTouchMove = (e) => {
+            if (!dragging) return;
+            e.preventDefault();
+            
+            const rect = e.currentTarget.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            setCircles(circles.map(circle => 
+              circle.id === dragging ? { ...circle, x, y } : circle
+            ));
+          };
+
+          const handleTouchEnd = () => {
+            setDragging(null);
+          };
+
+          const handleIntensityChange = (id, newIntensity) => {
+            setCircles(circles.map(circle => 
+              circle.id === id ? { ...circle, intensity: parseInt(newIntensity) } : circle
+            ));
+          };
+
+          const getCircleColor = (circle) => {
+            if (isSubtractive) {
+              const amount = circle.intensity;
+              if (circle.id === 'red') return `rgb(${255 - amount}, 255, 255)`;
+              if (circle.id === 'green') return `rgb(255, ${255 - amount}, 255)`;
+              if (circle.id === 'blue') return `rgb(255, 255, ${255 - amount})`;
+            } else {
+              if (circle.id === 'red') return `rgb(${circle.intensity}, 0, 0)`;
+              if (circle.id === 'green') return `rgb(0, ${circle.intensity}, 0)`;
+              if (circle.id === 'blue') return `rgb(0, 0, ${circle.intensity})`;
+            }
+          };
+
+          const getCircleLabel = (circle) => {
+            if (isSubtractive) {
+              if (circle.id === 'red') return 'Cyan';
+              if (circle.id === 'green') return 'Magenta';
+              if (circle.id === 'blue') return 'Jaune';
+            }
+            return circle.label;
+          };
+
+          return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4" style={{ backgroundColor: isSubtractive ? '#ffffff' : '#000000' }}>
+              <div className="mb-6 text-center">
+                <h1 className="text-3xl font-bold mb-2" style={{ color: isSubtractive ? '#000000' : '#ffffff' }}>
+                  Synthèse {isSubtractive ? 'Soustractive' : 'Additive'} des Couleurs
+                </h1>
+                
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <span className="font-semibold" style={{ color: isSubtractive ? '#000000' : '#ffffff' }}>
+                    Additive (RGB)
+                  </span>
+                  <button
+                    onClick={() => setIsSubtractive(!isSubtractive)}
+                    className="relative inline-flex h-8 w-16 items-center rounded-full transition-colors"
+                    style={{ backgroundColor: isSubtractive ? '#4ade80' : '#6b7280' }}
+                  >
+                    <span
+                      className="inline-block h-6 w-6 transform rounded-full bg-white transition-transform"
+                      style={{ transform: isSubtractive ? 'translateX(36px)' : 'translateX(4px)' }}
+                    />
+                  </button>
+                  <span className="font-semibold" style={{ color: isSubtractive ? '#000000' : '#ffffff' }}>
+                    Soustractive (CMY)
+                  </span>
+                </div>
+                
+                <p style={{ color: isSubtractive ? '#374151' : '#d1d5db' }}>
+                  Déplacez les cercles pour voir les mélanges de couleurs !
+                </p>
+                <p className="text-sm mt-2" style={{ color: isSubtractive ? '#6b7280' : '#9ca3af' }}>
+                  {isSubtractive 
+                    ? 'Cyan + Magenta = Bleu | Cyan + Jaune = Vert | Magenta + Jaune = Rouge'
+                    : 'Rouge + Vert = Jaune | Bleu + Rouge = Magenta | Bleu + Vert = Cyan'
+                  }
+                </p>
+              </div>
+              
+              <div className="relative rounded-lg shadow-2xl border-4" style={{ backgroundColor: isSubtractive ? '#ffffff' : '#000000', borderColor: isSubtractive ? '#d1d5db' : '#374151' }}>
+                <svg 
+                  width="600" 
+                  height="500"
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  className="cursor-move"
+                  style={{ backgroundColor: isSubtractive ? '#ffffff' : '#000000' }}
+                >
+                  <defs>
+                    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  
+                  {circles.map((circle) => (
+                    <circle
+                      key={circle.id}
+                      cx={circle.x}
+                      cy={circle.y}
+                      r={radius}
+                      fill={getCircleColor(circle)}
+                      opacity="0.85"
+                      style={{ mixBlendMode: isSubtractive ? 'multiply' : 'screen' }}
+                      filter={isSubtractive ? "" : "url(#glow)"}
+                      onMouseDown={() => handleMouseDown(circle.id)}
+                      onTouchStart={() => handleTouchStart(circle.id)}
+                      className="cursor-grab active:cursor-grabbing"
+                    />
+                  ))}
+                  
+                  {showLabels && circles.map((circle) => (
+                    <text
+                      key={`label-${circle.id}`}
+                      x={circle.x}
+                      y={circle.y + 5}
+                      textAnchor="middle"
+                      fill="white"
+                      fontSize="16"
+                      fontWeight="bold"
+                      style={{ 
+                        pointerEvents: 'none', 
+                        userSelect: 'none',
+                        textShadow: isSubtractive ? '0 0 4px white, 0 0 8px white' : '0 0 4px black, 0 0 8px black',
+                        fill: isSubtractive ? 'black' : 'white'
+                      }}
+                    >
+                      {getCircleLabel(circle)}
+                    </text>
+                  ))}
+                  
+                  <circle
+                    cx={samplePoint.x}
+                    cy={samplePoint.y}
+                    r="8"
+                    fill="white"
+                    stroke="black"
+                    strokeWidth="2"
+                    style={{ pointerEvents: 'none' }}
+                  />
+                  <circle
+                    cx={samplePoint.x}
+                    cy={samplePoint.y}
+                    r="3"
+                    fill="black"
+                    style={{ pointerEvents: 'none' }}
+                  />
+                </svg>
+              </div>
+              
+              <div className="mt-6 flex flex-col lg:flex-row gap-6 w-full max-w-5xl">
+                <div id="echantillon" className="bg-gray-800 p-6 rounded-lg shadow-xl border-2 border-gray-700 flex-1">
+                  <h2 className="text-white font-semibold mb-4 text-center">Couleur échantillonnée</h2>
+                  <div className="flex flex-col items-center gap-4">
+                    <div 
+                      className="w-32 h-32 rounded-lg border-4 border-white shadow-lg"
+                      style={{ backgroundColor: `rgb(${sampledColor.r}, ${sampledColor.g}, ${sampledColor.b})` }}
+                    />
+                    <div className="text-white space-y-2 text-center">
+                      {isSubtractive ? (
+                        <>
+                          <div className="text-lg">
+                            <span className="font-semibold">CMJN:</span> ({rgbToCmyk(sampledColor.r, sampledColor.g, sampledColor.b).c}%, {rgbToCmyk(sampledColor.r, sampledColor.g, sampledColor.b).m}%, {rgbToCmyk(sampledColor.r, sampledColor.g, sampledColor.b).y}%, {rgbToCmyk(sampledColor.r, sampledColor.g, sampledColor.b).k}%)
+                          </div>
+                          <div className="text-lg">
+                            <span className="font-semibold">TSL:</span> ({rgbToHsl(sampledColor.r, sampledColor.g, sampledColor.b).h}°, {rgbToHsl(sampledColor.r, sampledColor.g, sampledColor.b).s}%, {rgbToHsl(sampledColor.r, sampledColor.g, sampledColor.b).l}%)
+                          </div>
+                          <div className="text-lg">
+                            <span className="font-semibold">HEX:</span> {rgbToHex(sampledColor.r, sampledColor.g, sampledColor.b)}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-lg">
+                            <span className="font-semibold">RGB:</span> ({sampledColor.r}, {sampledColor.g}, {sampledColor.b})
+                          </div>
+                          <div className="text-lg">
+                            <span className="font-semibold">TSL:</span> ({rgbToHsl(sampledColor.r, sampledColor.g, sampledColor.b).h}°, {rgbToHsl(sampledColor.r, sampledColor.g, sampledColor.b).s}%, {rgbToHsl(sampledColor.r, sampledColor.g, sampledColor.b).l}%)
+                          </div>
+                          <div className="text-lg">
+                            <span className="font-semibold">HEX:</span> {rgbToHex(sampledColor.r, sampledColor.g, sampledColor.b)}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div id="controller" className="bg-gray-800 p-6 rounded-lg shadow-xl border-2 border-gray-700 flex-1">
+                  <h2 className="text-white font-semibold mb-4 text-center">Contrôle d'intensité des couleurs</h2>
+                  <div className="space-y-4">
+                    {circles.map((circle) => (
+                      <div key={circle.id} className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label className="text-white font-medium">{getCircleLabel(circle)}</label>
+                          <span className="text-white bg-gray-700 px-3 py-1 rounded">{circle.intensity}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="255"
+                          value={circle.intensity}
+                          onChange={(e) => handleIntensityChange(circle.id, e.target.value)}
+                          className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                          style={{
+                            background: isSubtractive 
+                              ? `linear-gradient(to right, #fff 0%, ${getCircleColor(circle)} 100%)`
+                              : `linear-gradient(to right, #000 0%, ${getCircleColor(circle)} 100%)`
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Rendu de l'application
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ColorSynthesis />);
+    </script>
+</body>
+</html>

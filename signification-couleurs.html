@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeu des Couleurs</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --accent: #e94560;
+    --gold: #ffd700;
+    --text: #eaeaea;
+    --sub: #8892b0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+  }
+  .stars {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at top, #1a1a4e 0%, #1a1a2e 70%);
+  }
+  .stars::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 10%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 40%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 90%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 50%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 15%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 40% 75%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 35%, #fff 0%, transparent 100%);
+    opacity: 0.4;
+  }
+  #app {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 720px;
+    padding: 20px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── START ── */
+  #start-screen { text-align: center; animation: fadeIn 0.6s ease; }
+  .game-title {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    background: linear-gradient(135deg, #ffd700, #ff6b6b, #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 0.3em;
+    filter: drop-shadow(0 0 20px rgba(255,215,0,0.3));
+  }
+  .subtitle { color: var(--sub); font-size: 1.1rem; margin-bottom: 2.5rem; }
+  .info-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 24px;
+    margin-bottom: 2rem; text-align: left;
+  }
+  .info-box h3 { color: var(--gold); margin-bottom: 12px; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; }
+  .info-box p { color: var(--sub); line-height: 1.7; font-size: 0.95rem; }
+  .info-box .pt { color: var(--accent); font-weight: 700; }
+  .btn-start {
+    background: linear-gradient(135deg, #e94560, #a855f7);
+    border: none; border-radius: 50px;
+    color: white; font-family: 'Nunito', sans-serif;
+    font-size: 1.2rem; font-weight: 900;
+    padding: 16px 48px; cursor: pointer;
+    letter-spacing: 1px; text-transform: uppercase;
+    box-shadow: 0 8px 30px rgba(233,69,96,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-start:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(233,69,96,0.5); }
+
+  /* ── GAME ── */
+  #game-screen { animation: fadeIn 0.4s ease; }
+  .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .level-badge {
+    background: rgba(255,255,255,0.08);
+    border-radius: 50px; padding: 8px 18px;
+    font-size: 0.85rem; color: var(--sub); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .level-badge span { color: var(--text); font-size: 1rem; }
+  .score-display { font-size: 1.4rem; font-weight: 900; color: var(--gold); text-shadow: 0 0 20px rgba(255,215,0,0.4); }
+  .progress-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 32px; overflow: hidden; }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, #e94560, #a855f7);
+    border-radius: 3px; transition: width 0.4s ease;
+  }
+  .word-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px; padding: 36px 32px;
+    text-align: center; margin-bottom: 24px;
+  }
+  .keyword {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    color: white; text-shadow: 0 0 40px rgba(255,255,255,0.2); letter-spacing: 1px;
+  }
+  .instruction { color: var(--sub); font-size: 0.9rem; margin-top: 12px; }
+
+  /* ── COLOR GRID ── */
+  .colors-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px; margin-bottom: 20px;
+  }
+  @media (max-width: 480px) { .colors-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .color-btn {
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 18px 6px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .color-btn .label {
+    color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    text-align: center; line-height: 1.2; pointer-events: none;
+  }
+  .color-btn:hover { transform: translateY(-2px) scale(1.04); }
+  .color-btn:active { transform: scale(0.97); }
+  .color-btn.selected {
+    border: 3px solid white;
+    box-shadow: 0 0 20px rgba(255,255,255,0.4);
+    transform: scale(1.06);
+  }
+  .color-btn.correct { border: 3px solid #4ade80 !important; box-shadow: 0 0 24px rgba(74,222,128,0.65) !important; }
+  .color-btn.wrong   { border: 3px solid #f87171 !important; box-shadow: 0 0 24px rgba(248,113,113,0.65) !important; opacity: 0.65; }
+  .color-btn.missed  { border: 3px dashed #4ade80 !important; box-shadow: 0 0 18px rgba(74,222,128,0.4) !important; }
+
+  /* Color backgrounds */
+  .color-btn[data-color="noir"]      { background: linear-gradient(135deg, #2d2d2d, #111); }
+  .color-btn[data-color="blanc"]     { background: linear-gradient(135deg, #f0f0f0, #d0d0d0); }
+  .color-btn[data-color="blanc"] .label { color: #333; text-shadow: none; }
+  .color-btn[data-color="gris"]      { background: linear-gradient(135deg, #7a7a7a, #4a4a4a); }
+  .color-btn[data-color="bleu"]      { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+  .color-btn[data-color="vert"]      { background: linear-gradient(135deg, #22c55e, #15803d); }
+  .color-btn[data-color="rouge"]     { background: linear-gradient(135deg, #ef4444, #991b1b); }
+  .color-btn[data-color="orange"]    { background: linear-gradient(135deg, #f97316, #c2410c); }
+  .color-btn[data-color="rose"]      { background: linear-gradient(135deg, #ec4899, #9d174d); }
+  .color-btn[data-color="jaune"]     { background: linear-gradient(135deg, #facc15, #ca8a04); }
+  .color-btn[data-color="violet"]    { background: linear-gradient(135deg, #a855f7, #6d28d9); }
+  .color-btn[data-color="marron"]    { background: linear-gradient(135deg, #92400e, #451a03); }
+
+  /* ── ACTION BUTTON ── */
+  .btn-action {
+    width: 100%; border: none; border-radius: 16px;
+    color: white; font-family: 'Nunito', sans-serif;
+    font-size: 1.1rem; font-weight: 900;
+    padding: 18px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 2px;
+    transition: all 0.25s;
+  }
+  .btn-action.state-validate { background: linear-gradient(135deg, #e94560, #a855f7); box-shadow: 0 6px 20px rgba(233,69,96,0.3); }
+  .btn-action.state-next     { background: linear-gradient(135deg, #22c55e, #15803d); box-shadow: 0 6px 20px rgba(34,197,94,0.35); animation: popIn 0.3s ease; }
+  .btn-action:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+  .btn-action:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    display: none;
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px; padding: 18px;
+    margin-bottom: 14px; text-align: center;
+    animation: popIn 0.3s ease;
+  }
+  .feedback.show { display: block; }
+  .feedback.good { border: 1px solid #4ade80; }
+  .feedback.bad  { border: 1px solid #f87171; }
+  .feedback-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 6px; }
+  .feedback.good .feedback-title { color: #4ade80; }
+  .feedback.bad  .feedback-title { color: #f87171; }
+  .feedback-text { color: var(--sub); font-size: 0.9rem; }
+  .pts-earned { color: var(--gold); font-weight: 700; }
+
+  /* ── RESULT ── */
+  #result-screen { text-align: center; animation: fadeIn 0.6s ease; }
+  .trophy { font-size: 5rem; margin-bottom: 16px; animation: bounce 1s ease infinite alternate; }
+  .result-title {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(2rem, 7vw, 3.5rem);
+    background: linear-gradient(135deg, #ffd700, #ff6b6b);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .final-score { font-size: 4rem; font-weight: 900; color: var(--gold); text-shadow: 0 0 40px rgba(255,215,0,0.5); margin: 16px 0; }
+  .max-score { color: var(--sub); font-size: 1rem; }
+  .grade-bar { background: rgba(255,255,255,0.08); border-radius: 50px; height: 20px; margin: 20px 0; overflow: hidden; }
+  .grade-fill {
+    height: 100%; background: linear-gradient(90deg, #ffd700, #ff6b6b);
+    border-radius: 50px; transition: width 1.5s cubic-bezier(.17,.67,.35,1.1);
+  }
+  .result-msg { color: var(--sub); font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.6; }
+  .btn-restart {
+    background: linear-gradient(135deg, #ffd700, #f97316);
+    border: none; border-radius: 50px;
+    color: #1a1a2e; font-family: 'Nunito', sans-serif;
+    font-size: 1.1rem; font-weight: 900;
+    padding: 16px 48px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 1px;
+    box-shadow: 0 8px 30px rgba(255,215,0,0.3);
+    transition: all 0.2s;
+  }
+  .btn-restart:hover { transform: translateY(-3px); }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes popIn  { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:scale(1); } }
+  @keyframes bounce { from { transform:translateY(0); } to { transform:translateY(-12px); } }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div id="app">
+
+  <!-- START -->
+  <div id="start-screen" class="screen active">
+    <div class="game-title">🎨 Couleurs & Mots</div>
+    <p class="subtitle">Associe chaque mot à sa couleur !</p>
+    <div class="info-box">
+      <h3>⚡ Règles du jeu</h3>
+      <p>
+        • <span class="pt">20 niveaux</span> — à chaque niveau, un mot s'affiche.<br>
+        • Sélectionne la ou les couleurs qui lui correspondent.<br>
+        • <span class="pt">+10 pts</span> pour une bonne réponse (sans erreur).<br>
+        • <span class="pt">+5 pts bonus</span> par couleur supplémentaire correcte découverte.<br>
+        • 1 mauvaise couleur parmi de bonnes → <span class="pt">moitié des points</span>.<br>
+        • 2 mauvaises couleurs ou plus → <span class="pt">0 point</span>.
+      </p>
+    </div>
+    <button class="btn-start" onclick="startGame()">Commencer !</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="game-screen" class="screen">
+    <div class="hud">
+      <div class="level-badge">Niveau <span id="level-num">1</span>/20</div>
+      <div class="score-display">⭐ <span id="score">0</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:5%"></div></div>
+    <div class="word-card">
+      <div class="keyword" id="keyword">—</div>
+      <div class="instruction">Sélectionne la ou les couleurs correspondantes, puis valide.</div>
+    </div>
+    <div class="colors-grid">
+      <button class="color-btn" data-color="rouge"  onclick="toggleColor(this)"><span class="label">Rouge</span></button>
+      <button class="color-btn" data-color="orange" onclick="toggleColor(this)"><span class="label">Orange</span></button>
+      <button class="color-btn" data-color="jaune"  onclick="toggleColor(this)"><span class="label">Jaune</span></button>
+      <button class="color-btn" data-color="vert"   onclick="toggleColor(this)"><span class="label">Vert</span></button>
+      <button class="color-btn" data-color="bleu"   onclick="toggleColor(this)"><span class="label">Bleu</span></button>
+      <button class="color-btn" data-color="violet" onclick="toggleColor(this)"><span class="label">Violet</span></button>
+      <button class="color-btn" data-color="rose"   onclick="toggleColor(this)"><span class="label">Rose</span></button>
+      <button class="color-btn" data-color="marron" onclick="toggleColor(this)"><span class="label">Marron</span></button>
+      <button class="color-btn" data-color="noir"   onclick="toggleColor(this)"><span class="label">Noir</span></button>
+      <button class="color-btn" data-color="blanc"  onclick="toggleColor(this)"><span class="label">Blanc</span></button>
+      <button class="color-btn" data-color="gris"   onclick="toggleColor(this)"><span class="label">Gris</span></button>
+    </div>
+    <div class="feedback" id="feedback">
+      <div class="feedback-title" id="feedback-title"></div>
+      <div class="feedback-text"  id="feedback-text"></div>
+    </div>
+    <button class="btn-action state-validate" id="action-btn" onclick="handleBtn()">Valider ✓</button>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-screen" class="screen">
+    <div class="trophy" id="trophy">🏆</div>
+    <div class="result-title">Résultat final !</div>
+    <div class="final-score" id="final-score">0</div>
+    <div class="max-score"   id="max-score-txt">/ ??? pts</div>
+    <div class="grade-bar"><div class="grade-fill" id="grade-fill" style="width:0%"></div></div>
+    <p class="result-msg" id="result-msg"></p>
+    <button class="btn-restart" onclick="restartGame()">🔄 Rejouer</button>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   LISTE EXACTE fournie par l'enseignant — aucune modification
+   ═══════════════════════════════════════════════════════════ */
+const colorData = {
+  // "Fiabilité" ajouté au rouge : référence culturelle suisse (drapeau, Swiss Made)
+  rouge:  ["Action","Danger","Énergie","Amour","Passion","Agressivité","Pouvoir","Chaleur","Feu","Sang","Urgence","Alerte","Fiabilité (🇨🇭)"],
+  orange: ["Créativité","Confiance","Énergie","Convivialité","Optimisme","Excitation","Succès","Équilibre","Fierté","Dynamisme","Sociabilité","Enthousiasme","Chaleur","Aventure"],
+  // "Enjouement" remplacé par "Enthousiasme"
+  jaune:  ["Joie","Bonheur","Positivité","Enthousiasme","Jeunesse","Optimisme","Attention","Alerte","Excitation","Chaleur","Été","Énergie","Lumière","Créativité"],
+  // "Aventure" ajouté au vert
+  vert:   ["Nature","Croissance","Équilibre","Santé","Stabilité","Prospérité","Chance","Fertilité","Harmonie","Fraîcheur","Aventure"],
+  // "Professionnalisme", "Créativité", "Santé" ajoutés au bleu
+  bleu:   ["Apaisant","Autorité","Propre","Confiance","Calme","Fiabilité","Intelligence","Distance émotionnelle","Conservateur","Sagesse","Intégrité","Patience","Paisible","Eau","Ciel","Loyauté","Sécurité","Professionnalisme","Créativité","Santé"],
+  violet: ["Spiritualité","Luxe","Créativité","Mystère","Prestige","Sagesse","Majesté","Imagination","Féminité"],
+  // "Féminité" ajouté au rose
+  rose:   ["Douceur","Affection","Tendresse","Empathie","Romantisme","Innocence","Santé","Joie","Optimisme","Féminin","Féminité"],
+  marron: ["Terre","Stabilité","Fiabilité","Rusticité","Authenticité","Nature","Chaleur"],
+  noir:   ["Élégance","Autorité","Pouvoir","Mort","Drame","Sophistication","Luxe","Mystère","Nuit"],
+  blanc:  ["Pureté","Paix","Innocence","Lumière","Minimalisme","Propreté","Neutralité","Simplicité","Modernité","Foi","Délicatesse","Élégance"],
+  gris:   ["Calme","Neutralité","Professionnalisme","Modernité","Distance","Minimalisme","Neutre","Fiable"],
+};
+
+/* Build levels: each unique word → array of colors that contain it */
+function buildAllLevels() {
+  const map = {};
+  for (const [color, words] of Object.entries(colorData)) {
+    for (const word of words) {
+      const key = word.toLowerCase();
+      if (!map[key]) map[key] = { word, colors: [] };
+      if (!map[key].colors.includes(color)) map[key].colors.push(color);
+    }
+  }
+  return Object.values(map);
+}
+
+const ALL_LEVELS = buildAllLevels();
+
+const colorNames = {
+  rouge:'Rouge', orange:'Orange', jaune:'Jaune', vert:'Vert', bleu:'Bleu',
+  violet:'Violet', rose:'Rose', marron:'Marron', noir:'Noir', blanc:'Blanc', gris:'Gris'
+};
+
+let levels   = [];
+let current  = 0;
+let score    = 0;
+let answered = false;
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function startGame() {
+  levels   = shuffle(ALL_LEVELS).slice(0, 20);
+  current  = 0; score = 0; answered = false;
+  showScreen('game-screen');
+  loadLevel();
+}
+
+function loadLevel() {
+  answered = false;
+  const lvl = levels[current];
+  document.getElementById('level-num').innerText = current + 1;
+  document.getElementById('score').innerText     = score;
+  document.getElementById('keyword').innerText   = lvl.word;
+  document.getElementById('progress').style.width = ((current + 1) / 20 * 100) + '%';
+
+  document.querySelectorAll('.color-btn').forEach(b => {
+    b.classList.remove('selected','correct','wrong','missed');
+    b.disabled = false;
+  });
+
+  const btn = document.getElementById('action-btn');
+  btn.textContent = 'Valider ✓';
+  btn.className   = 'btn-action state-validate';
+  btn.disabled    = false;
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  document.getElementById('feedback-title').innerHTML = '';
+  document.getElementById('feedback-text').innerText  = '';
+}
+
+function toggleColor(btn) {
+  if (answered) return;
+  btn.classList.toggle('selected');
+}
+
+function handleBtn() {
+  if (answered) {
+    current++;
+    if (current >= 20) showResult();
+    else loadLevel();
+  } else {
+    doValidate();
+  }
+}
+
+function doValidate() {
+  const selected = [...document.querySelectorAll('.color-btn.selected')].map(b => b.dataset.color);
+
+  if (selected.length === 0) {
+    const fb = document.getElementById('feedback');
+    fb.className = 'feedback bad show';
+    document.getElementById('feedback-title').innerText = '⚠️ Sélectionne au moins une couleur !';
+    document.getElementById('feedback-text').innerText  = '';
+    return;
+  }
+
+  answered = true;
+  const lvl      = levels[current];
+  const correct  = new Set(lvl.colors);
+  const selSet   = new Set(selected);
+  const trueHits = selected.filter(c =>  correct.has(c));
+  const falseHits= selected.filter(c => !correct.has(c));
+  const missed   = lvl.colors.filter(c => !selSet.has(c));
+
+  // Scoring:
+  // 0 wrong  → full points (10 + 5 per extra correct)
+  // 1 wrong  + at least 1 correct → half points (rounded down)
+  // 2+ wrong → 0 points
+  let pts = 0;
+  let scoreType = 'none'; // 'full' | 'half' | 'none'
+  if (trueHits.length > 0) {
+    const fullPts = 10 + (trueHits.length - 1) * 5;
+    if (falseHits.length === 0) {
+      pts = fullPts; scoreType = 'full';
+    } else if (falseHits.length === 1) {
+      pts = Math.floor(fullPts / 2); scoreType = 'half';
+    }
+    // 2+ wrong → pts stays 0
+  }
+  score += pts;
+
+  document.querySelectorAll('.color-btn').forEach(b => {
+    b.disabled = true;
+    const c = b.dataset.color;
+    if (trueHits.includes(c))       b.classList.add('correct');
+    else if (falseHits.includes(c)) b.classList.add('wrong');
+    else if (missed.includes(c))    b.classList.add('missed');
+  });
+
+  document.getElementById('score').innerText = score;
+
+  const fb  = document.getElementById('feedback');
+  const fbt = document.getElementById('feedback-title');
+  const fbx = document.getElementById('feedback-text');
+
+  if (scoreType === 'full') {
+    fb.className  = 'feedback good show';
+    fbt.innerHTML = pts > 10
+      ? `🌟 Excellent ! <span class="pts-earned">+${pts} pts</span>`
+      : `✅ Bravo ! <span class="pts-earned">+${pts} pts</span>`;
+    fbx.innerText = missed.length > 0
+      ? `Tu as trouvé ${trueHits.length} couleur(s) — il y en avait d'autres (cases pointillées) !`
+      : `Bonne réponse${trueHits.length > 1 ? ' — toutes les couleurs trouvées !' : ' !'}`;
+  } else if (scoreType === 'half') {
+    fb.className  = 'feedback bad show';
+    fbt.innerHTML = `⚠️ Presque… <span class="pts-earned">+${pts} pts</span> <span style="color:var(--sub);font-size:0.85rem">(½ pts — 1 erreur)</span>`;
+    fbx.innerText = `Bonne(s) réponse(s) : ${lvl.colors.map(c => colorNames[c]).join(', ')}`;
+  } else {
+    fb.className  = 'feedback bad show';
+    fbt.innerText = '❌ Pas tout à fait… 0 pt';
+    fbx.innerText = `Bonne(s) réponse(s) : ${lvl.colors.map(c => colorNames[c]).join(', ')}`;
+  }
+
+  const btn = document.getElementById('action-btn');
+  btn.textContent = current < 19 ? 'Niveau suivant →' : 'Voir les résultats →';
+  btn.className   = 'btn-action state-next';
+  btn.disabled    = false;
+}
+
+function showResult() {
+  showScreen('result-screen');
+  const maxPts = levels.reduce((acc, l) => acc + 10 + (l.colors.length - 1) * 5, 0);
+  document.getElementById('final-score').innerText   = score;
+  document.getElementById('max-score-txt').innerText = `/ ${maxPts} pts`;
+  setTimeout(() => {
+    document.getElementById('grade-fill').style.width = Math.min(100, score / maxPts * 100) + '%';
+  }, 100);
+
+  const pct = score / maxPts;
+  let msg, trophy;
+  if (pct >= 0.9)      { msg = "Extraordinaire ! Tu maîtrises parfaitement la psychologie des couleurs. 🎨"; trophy = "🏆"; }
+  else if (pct >= 0.7) { msg = "Très bon travail ! Tu as une belle sensibilité aux couleurs."; trophy = "🥇"; }
+  else if (pct >= 0.5) { msg = "Pas mal ! Encore un peu de pratique et tu seras au top !"; trophy = "🥈"; }
+  else                 { msg = "Continue à réviser ta liste et reviens pour t'améliorer !"; trophy = "💪"; }
+
+  document.getElementById('trophy').innerText     = trophy;
+  document.getElementById('result-msg').innerText = msg;
+}
+
+function restartGame() { showScreen('start-screen'); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>

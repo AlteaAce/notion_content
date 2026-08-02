@@ -29,9 +29,9 @@
 html{-webkit-text-size-adjust:100%}
 body{
   margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:var(--body);
+  background:let(--bg);
+  color:let(--ink);
+  font-family:let(--body);
   font-size:17px;
   line-height:1.6;
   padding:clamp(20px,4vw,56px) clamp(16px,4vw,40px) 64px;
@@ -41,15 +41,15 @@ body{
 /* ---------- en-tête ---------- */
 
 .eyebrow{
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:13px;
   letter-spacing:.14em;
   text-transform:uppercase;
-  color:var(--ink-soft);
+  color:let(--ink-soft);
   margin:0 0 14px;
 }
 h1{
-  font-family:var(--display);
+  font-family:let(--display);
   font-weight:800;
   font-size:clamp(34px,5.6vw,62px);
   line-height:1.02;
@@ -59,11 +59,11 @@ h1{
 }
 .thesis{
   font-size:clamp(17px,2vw,21px);
-  color:var(--ink-soft);
+  color:let(--ink-soft);
   max-width:62ch;
   margin:0 0 32px;
 }
-.thesis strong{color:var(--ink);font-weight:600}
+.thesis strong{color:let(--ink);font-weight:600}
 
 /* ---------- barre d'outils ---------- */
 
@@ -73,26 +73,26 @@ h1{
   align-items:center;
   gap:10px;
   padding:14px 0 0;
-  border-top:1px solid var(--rule);
+  border-top:1px solid let(--rule);
   margin-bottom:34px;
 }
 .toolbar button{
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:13px;
-  color:var(--ink);
+  color:let(--ink);
   background:transparent;
-  border:1px solid var(--rule);
+  border:1px solid let(--rule);
   border-radius:2px;
   padding:8px 15px;
   cursor:pointer;
   transition:background .12s ease,border-color .12s ease;
 }
-.toolbar button:hover{background:var(--paper);border-color:var(--ink-soft)}
+.toolbar button:hover{background:let(--paper);border-color:let(--ink-soft)}
 .toolbar button:active{transform:translateY(1px)}
 .toolbar .aside{
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:12px;
-  color:var(--ink-soft);
+  color:let(--ink-soft);
   margin-left:auto;
 }
 
@@ -107,8 +107,8 @@ h1{
 @media (max-width:900px){.bench{grid-template-columns:1fr}}
 
 .panel{
-  background:var(--paper);
-  border:1px solid var(--rule);
+  background:let(--paper);
+  border:1px solid let(--rule);
   border-radius:3px;
   display:flex;
   flex-direction:column;
@@ -116,7 +116,7 @@ h1{
 }
 .panel-head{padding:20px 22px 0}
 .stack{
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:12px;
   letter-spacing:.08em;
   text-transform:uppercase;
@@ -124,12 +124,12 @@ h1{
   padding:5px 10px;
   border-radius:2px;
 }
-.p-html .stack{background:var(--inert-bg);color:var(--inert)}
-.p-css  .stack{background:var(--css-bg);color:var(--css)}
-.p-js   .stack{background:var(--js-bg);color:var(--js)}
+.p-html .stack{background:let(--inert-bg);color:let(--inert)}
+.p-css  .stack{background:let(--css-bg);color:let(--css)}
+.p-js   .stack{background:let(--js-bg);color:let(--js)}
 
 .verdict{
-  font-family:var(--display);
+  font-family:let(--display);
   font-weight:600;
   font-size:22px;
   line-height:1.2;
@@ -141,22 +141,22 @@ h1{
 /* ---------- compteur ---------- */
 
 .readout{
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-weight:500;
   font-size:clamp(56px,7vw,76px);
   line-height:1;
   text-align:center;
   padding:20px 0 6px;
-  font-variant-numeric:tabular-nums;
+  font-letiant-numeric:tabular-nums;
 }
-.p-html .readout{color:var(--inert)}
-.p-css  .readout{color:var(--css)}
-.p-js   .readout{color:var(--js)}
+.p-html .readout{color:let(--inert)}
+.p-css  .readout{color:let(--css)}
+.p-js   .readout{color:let(--js)}
 
 .btn{
   display:block;
   width:100%;
-  font-family:var(--body);
+  font-family:let(--body);
   font-size:17px;
   font-weight:600;
   text-align:center;
@@ -167,22 +167,22 @@ h1{
   user-select:none;
   transition:background .1s ease;
 }
-.p-html .btn{background:var(--inert-bg);border-color:var(--inert);color:var(--inert)}
+.p-html .btn{background:let(--inert-bg);border-color:let(--inert);color:let(--inert)}
 .p-html .btn:active{background:#DFE4E6}
-.p-css  .btn{background:var(--css-bg);border-color:var(--css);color:var(--css)}
+.p-css  .btn{background:let(--css-bg);border-color:let(--css);color:let(--css)}
 .p-css  .btn:active{background:#F4E3CC}
-.p-js   .btn{background:var(--js-bg);border-color:var(--js);color:var(--js)}
+.p-js   .btn{background:let(--js-bg);border-color:let(--js);color:let(--js)}
 .p-js   .btn:hover{background:#D3E9E2}
 .p-js   .btn:active{background:#C4E1D8}
 
 /* ---------- bande mémoire (élément signature) ---------- */
 
 .mem-label{
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:11px;
   letter-spacing:.1em;
   text-transform:uppercase;
-  color:var(--ink-soft);
+  color:let(--ink-soft);
   margin:0 0 8px;
 }
 .mem{display:flex;gap:5px}
@@ -193,23 +193,23 @@ h1{
   display:flex;
   align-items:center;
   justify-content:center;
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:14px;
   border-radius:2px;
-  color:var(--ink-soft);
+  color:let(--ink-soft);
   background:#F4F6F7;
-  border:1px solid var(--rule);
+  border:1px solid let(--rule);
 }
 .cell.empty{border-style:dashed;background:transparent;color:#AEB8BD}
-.p-css .cell.on{background:var(--css);border-color:var(--css);color:#fff}
+.p-css .cell.on{background:let(--css);border-color:let(--css);color:#fff}
 .p-js  .cell.live{
-  background:var(--js);border-color:var(--js);color:#fff;
+  background:let(--js);border-color:let(--js);color:#fff;
   font-size:18px;font-weight:500;flex:0 0 84px;
 }
 .mem-note{
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:12px;
-  color:var(--ink-soft);
+  color:let(--ink-soft);
   margin:8px 0 0;
   line-height:1.5;
 }
@@ -218,20 +218,20 @@ h1{
 
 .note{
   font-size:15px;
-  color:var(--ink-soft);
+  color:let(--ink-soft);
   margin:0;
   padding-top:16px;
-  border-top:1px solid var(--rule);
+  border-top:1px solid let(--rule);
   margin-top:auto;
 }
-.note b{color:var(--ink);font-weight:600}
+.note b{color:let(--ink);font-weight:600}
 
 .wall{
   font-size:14px;
   line-height:1.5;
-  color:var(--css);
-  background:var(--css-bg);
-  border-left:3px solid var(--css);
+  color:let(--css);
+  background:let(--css-bg);
+  border-left:3px solid let(--css);
   padding:11px 13px;
 }
 
@@ -245,7 +245,7 @@ h1{
 }
 .code pre{
   margin:0;
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:13px;
   line-height:1.65;
   color:#D5DEE3;
@@ -263,16 +263,16 @@ h1{
 .after{
   margin-top:44px;
   padding-top:28px;
-  border-top:1px solid var(--rule);
+  border-top:1px solid let(--rule);
 }
 .after h2{
-  font-family:var(--display);
+  font-family:let(--display);
   font-weight:600;
   font-size:clamp(22px,3vw,30px);
   letter-spacing:-.02em;
   margin:0 0 6px;
 }
-.after .sub{color:var(--ink-soft);margin:0 0 24px;font-size:16px}
+.after .sub{color:let(--ink-soft);margin:0 0 24px;font-size:16px}
 .qs{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -284,38 +284,38 @@ h1{
 }
 @media (max-width:900px){.qs{grid-template-columns:1fr}}
 .qs li{
-  border-top:2px solid var(--ink);
+  border-top:2px solid let(--ink);
   padding-top:14px;
   counter-increment:q;
 }
 .qs li::before{
   content:"Question " counter(q);
   display:block;
-  font-family:var(--mono);
+  font-family:let(--mono);
   font-size:11px;
   letter-spacing:.1em;
   text-transform:uppercase;
-  color:var(--ink-soft);
+  color:let(--ink-soft);
   margin-bottom:8px;
 }
 .qs .ask{
-  font-family:var(--display);
+  font-family:let(--display);
   font-weight:600;
   font-size:19px;
   line-height:1.25;
   letter-spacing:-.01em;
   margin:0 0 10px;
 }
-.qs .ans{font-size:15px;color:var(--ink-soft);margin:0}
-.qs .ans b{color:var(--ink);font-weight:600}
+.qs .ans{font-size:15px;color:let(--ink-soft);margin:0}
+.qs .ans b{color:let(--ink);font-weight:600}
 
 .closer{
   margin-top:40px;
   padding:26px 30px;
-  background:var(--ink);
+  background:let(--ink);
   color:#E6EAEC;
   border-radius:3px;
-  font-family:var(--display);
+  font-family:let(--display);
   font-weight:400;
   font-size:clamp(19px,2.6vw,27px);
   line-height:1.35;
@@ -325,7 +325,7 @@ h1{
 
 /* ---------- accessibilité ---------- */
 
-:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+:focus-visible{outline:2px solid let(--ink);outline-offset:2px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -358,16 +358,16 @@ h1{
 #s5:checked ~ .k5{display:none}
 #s5:checked ~ .wall{display:block}
 
-#s1:checked ~ .memblock .m0{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
-#s1:checked ~ .memblock .m1{background:var(--css);border-color:var(--css);color:#fff}
-#s2:checked ~ .memblock .m1{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
-#s2:checked ~ .memblock .m2{background:var(--css);border-color:var(--css);color:#fff}
-#s3:checked ~ .memblock .m2{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
-#s3:checked ~ .memblock .m3{background:var(--css);border-color:var(--css);color:#fff}
-#s4:checked ~ .memblock .m3{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
-#s4:checked ~ .memblock .m4{background:var(--css);border-color:var(--css);color:#fff}
-#s5:checked ~ .memblock .m4{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
-#s5:checked ~ .memblock .m5{background:var(--css);border-color:var(--css);color:#fff}
+#s1:checked ~ .memblock .m0{background:#F4F6F7;border-color:let(--rule);color:let(--ink-soft)}
+#s1:checked ~ .memblock .m1{background:let(--css);border-color:let(--css);color:#fff}
+#s2:checked ~ .memblock .m1{background:#F4F6F7;border-color:let(--rule);color:let(--ink-soft)}
+#s2:checked ~ .memblock .m2{background:let(--css);border-color:let(--css);color:#fff}
+#s3:checked ~ .memblock .m2{background:#F4F6F7;border-color:let(--rule);color:let(--ink-soft)}
+#s3:checked ~ .memblock .m3{background:let(--css);border-color:let(--css);color:#fff}
+#s4:checked ~ .memblock .m3{background:#F4F6F7;border-color:let(--rule);color:let(--ink-soft)}
+#s4:checked ~ .memblock .m4{background:let(--css);border-color:let(--css);color:#fff}
+#s5:checked ~ .memblock .m4{background:#F4F6F7;border-color:let(--rule);color:let(--ink-soft)}
+#s5:checked ~ .memblock .m5{background:let(--css);border-color:let(--css);color:#fff}
 </style>
 </head>
 <body>
@@ -382,7 +382,6 @@ h1{
 <div class="toolbar">
   <button type="button" id="toggle-code" aria-expanded="false">Afficher le code</button>
   <button type="button" id="reset">Tout remettre à zéro</button>
-  <span class="aside">cette barre d'outils est en JavaScript, évidemment</span>
 </div>
 
 <main class="bench">
@@ -502,34 +501,11 @@ bouton.<span class="t">addEventListener</span>(<span class="s">'click'</span>, (
 
 </main>
 
-<section class="after">
-  <h2>Les trois questions à poser une fois que tout le monde a cliqué</h2>
-  <p class="sub">Elles vont crescendo. La troisième est celle qui compte vraiment.</p>
-  <ol class="qs">
-    <li>
-      <p class="ask">« Faites-moi compter jusqu'à 1000. »</p>
-      <p class="ans"><b>JS</b> : on ne touche à rien, c'est déjà le cas. <b>CSS</b> : environ 4000 lignes à écrire.</p>
-    </li>
-    <li>
-      <p class="ask">« Ajoutez-moi un bouton −1. »</p>
-      <p class="ans"><b>JS</b> : <code>n = n − 1</code>, une ligne. <b>CSS</b> : il faut refaire toute la machinerie en sens inverse.</p>
-    </li>
-    <li>
-      <p class="ask">« Affichez "beaucoup" au-delà de 10. »</p>
-      <p class="ans"><b>JS</b> : <code>if (n &gt; 10)</code>. <b>CSS</b> : impossible. Aucune comparaison n'existe dans le langage.</p>
-    </li>
-  </ol>
-
-  <p class="closer">Le CSS peut <em>montrer</em> un résultat préparé à l'avance.<br>Le JavaScript peut <em>produire</em> un résultat qu'on n'avait pas prévu.</p>
-</section>
-
-</div>
-
 <script>
 (function () {
-  var n = 0;
-  var out = document.getElementById('js-readout');
-  var cell = document.getElementById('js-cell');
+  let n = 0;
+  let out = document.getElementById('js-readout');
+  let cell = document.getElementById('js-cell');
 
   document.getElementById('js-inc').addEventListener('click', function () {
     n = n + 1;
@@ -537,13 +513,13 @@ bouton.<span class="t">addEventListener</span>(<span class="s">'click'</span>, (
     cell.textContent = 'n = ' + n;
   });
 
-  var blocks = document.querySelectorAll('.code');
-  var toggle = document.getElementById('toggle-code');
-  var shown = false;
+  let blocks = document.querySelectorAll('.code');
+  let toggle = document.getElementById('toggle-code');
+  let shown = false;
 
   toggle.addEventListener('click', function () {
     shown = !shown;
-    for (var i = 0; i < blocks.length; i++) {
+    for (let i = 0; i < blocks.length; i++) {
       blocks[i].classList.toggle('code-hidden', !shown);
     }
     toggle.textContent = shown ? 'Masquer le code' : 'Afficher le code';
@@ -554,8 +530,8 @@ bouton.<span class="t">addEventListener</span>(<span class="s">'click'</span>, (
     n = 0;
     out.textContent = '0';
     cell.textContent = 'n = 0';
-    var sw = document.querySelectorAll('.sw');
-    for (var j = 0; j < sw.length; j++) sw[j].checked = false;
+    let sw = document.querySelectorAll('.sw');
+    for (let j = 0; j < sw.length; j++) sw[j].checked = false;
   });
 })();
 </script>

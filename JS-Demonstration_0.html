@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML, CSS, JavaScript — qui sait compter ?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6EAEC;
+  --paper:#FFFFFF;
+  --ink:#12171A;
+  --ink-soft:#5C666D;
+  --rule:#C6CFD4;
+  --inert:#79858C;
+  --inert-bg:#EDF0F1;
+  --css:#9E5A15;
+  --css-bg:#FBF0E1;
+  --js:#0C6A53;
+  --js-bg:#E2F1EC;
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:17px;
+  line-height:1.6;
+  padding:clamp(20px,4vw,56px) clamp(16px,4vw,40px) 64px;
+}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* ---------- en-tête ---------- */
+
+.eyebrow{
+  font-family:var(--mono);
+  font-size:13px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin:0 0 14px;
+}
+h1{
+  font-family:var(--display);
+  font-weight:800;
+  font-size:clamp(34px,5.6vw,62px);
+  line-height:1.02;
+  letter-spacing:-.025em;
+  margin:0 0 18px;
+  max-width:16ch;
+}
+.thesis{
+  font-size:clamp(17px,2vw,21px);
+  color:var(--ink-soft);
+  max-width:62ch;
+  margin:0 0 32px;
+}
+.thesis strong{color:var(--ink);font-weight:600}
+
+/* ---------- barre d'outils ---------- */
+
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  padding:14px 0 0;
+  border-top:1px solid var(--rule);
+  margin-bottom:34px;
+}
+.toolbar button{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--ink);
+  background:transparent;
+  border:1px solid var(--rule);
+  border-radius:2px;
+  padding:8px 15px;
+  cursor:pointer;
+  transition:background .12s ease,border-color .12s ease;
+}
+.toolbar button:hover{background:var(--paper);border-color:var(--ink-soft)}
+.toolbar button:active{transform:translateY(1px)}
+.toolbar .aside{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--ink-soft);
+  margin-left:auto;
+}
+
+/* ---------- grille de panneaux ---------- */
+
+.bench{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  align-items:start;
+}
+@media (max-width:900px){.bench{grid-template-columns:1fr}}
+
+.panel{
+  background:var(--paper);
+  border:1px solid var(--rule);
+  border-radius:3px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.panel-head{padding:20px 22px 0}
+.stack{
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:2px;
+}
+.p-html .stack{background:var(--inert-bg);color:var(--inert)}
+.p-css  .stack{background:var(--css-bg);color:var(--css)}
+.p-js   .stack{background:var(--js-bg);color:var(--js)}
+
+.verdict{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:22px;
+  line-height:1.2;
+  letter-spacing:-.015em;
+  margin:14px 0 0;
+}
+.panel-body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:18px;flex:1}
+
+/* ---------- compteur ---------- */
+
+.readout{
+  font-family:var(--mono);
+  font-weight:500;
+  font-size:clamp(56px,7vw,76px);
+  line-height:1;
+  text-align:center;
+  padding:20px 0 6px;
+  font-variant-numeric:tabular-nums;
+}
+.p-html .readout{color:var(--inert)}
+.p-css  .readout{color:var(--css)}
+.p-js   .readout{color:var(--js)}
+
+.btn{
+  display:block;
+  width:100%;
+  font-family:var(--body);
+  font-size:17px;
+  font-weight:600;
+  text-align:center;
+  padding:13px;
+  border-radius:2px;
+  border:1px solid;
+  cursor:pointer;
+  user-select:none;
+  transition:background .1s ease;
+}
+.p-html .btn{background:var(--inert-bg);border-color:var(--inert);color:var(--inert)}
+.p-html .btn:active{background:#DFE4E6}
+.p-css  .btn{background:var(--css-bg);border-color:var(--css);color:var(--css)}
+.p-css  .btn:active{background:#F4E3CC}
+.p-js   .btn{background:var(--js-bg);border-color:var(--js);color:var(--js)}
+.p-js   .btn:hover{background:#D3E9E2}
+.p-js   .btn:active{background:#C4E1D8}
+
+/* ---------- bande mémoire (élément signature) ---------- */
+
+.mem-label{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin:0 0 8px;
+}
+.mem{display:flex;gap:5px}
+.cell{
+  flex:1;
+  min-width:0;
+  height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--mono);
+  font-size:14px;
+  border-radius:2px;
+  color:var(--ink-soft);
+  background:#F4F6F7;
+  border:1px solid var(--rule);
+}
+.cell.empty{border-style:dashed;background:transparent;color:#AEB8BD}
+.p-css .cell.on{background:var(--css);border-color:var(--css);color:#fff}
+.p-js  .cell.live{
+  background:var(--js);border-color:var(--js);color:#fff;
+  font-size:18px;font-weight:500;flex:0 0 84px;
+}
+.mem-note{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--ink-soft);
+  margin:8px 0 0;
+  line-height:1.5;
+}
+
+/* ---------- note de bas de panneau ---------- */
+
+.note{
+  font-size:15px;
+  color:var(--ink-soft);
+  margin:0;
+  padding-top:16px;
+  border-top:1px solid var(--rule);
+  margin-top:auto;
+}
+.note b{color:var(--ink);font-weight:600}
+
+.wall{
+  font-size:14px;
+  line-height:1.5;
+  color:var(--css);
+  background:var(--css-bg);
+  border-left:3px solid var(--css);
+  padding:11px 13px;
+}
+
+/* ---------- code ---------- */
+
+.code{
+  background:#10161A;
+  border-radius:2px;
+  padding:16px 18px;
+  overflow-x:auto;
+}
+.code pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.65;
+  color:#D5DEE3;
+  white-space:pre;
+}
+.code .c{color:#7C8B94}
+.code .t{color:#8FC8E8}
+.code .a{color:#E0AE72}
+.code .s{color:#9FD0A8}
+.code .k{color:#D3A7E0}
+.code-hidden{display:none}
+
+/* ---------- questions ---------- */
+
+.after{
+  margin-top:44px;
+  padding-top:28px;
+  border-top:1px solid var(--rule);
+}
+.after h2{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:clamp(22px,3vw,30px);
+  letter-spacing:-.02em;
+  margin:0 0 6px;
+}
+.after .sub{color:var(--ink-soft);margin:0 0 24px;font-size:16px}
+.qs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  list-style:none;
+  padding:0;
+  margin:0;
+  counter-reset:q;
+}
+@media (max-width:900px){.qs{grid-template-columns:1fr}}
+.qs li{
+  border-top:2px solid var(--ink);
+  padding-top:14px;
+  counter-increment:q;
+}
+.qs li::before{
+  content:"Question " counter(q);
+  display:block;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin-bottom:8px;
+}
+.qs .ask{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:19px;
+  line-height:1.25;
+  letter-spacing:-.01em;
+  margin:0 0 10px;
+}
+.qs .ans{font-size:15px;color:var(--ink-soft);margin:0}
+.qs .ans b{color:var(--ink);font-weight:600}
+
+.closer{
+  margin-top:40px;
+  padding:26px 30px;
+  background:var(--ink);
+  color:#E6EAEC;
+  border-radius:3px;
+  font-family:var(--display);
+  font-weight:400;
+  font-size:clamp(19px,2.6vw,27px);
+  line-height:1.35;
+  letter-spacing:-.015em;
+}
+.closer em{font-style:normal;font-weight:800;color:#fff}
+
+/* ---------- accessibilité ---------- */
+
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- machinerie du compteur CSS ---------- */
+
+.sw{position:absolute;opacity:0;pointer-events:none}
+.p-css .v1,.p-css .v2,.p-css .v3,.p-css .v4,.p-css .v5{display:none}
+.p-css .k2,.p-css .k3,.p-css .k4,.p-css .k5{display:none}
+.p-css .wall{display:none}
+
+#s1:checked ~ .readout .v0{display:none}
+#s1:checked ~ .readout .v1{display:block}
+#s2:checked ~ .readout .v1{display:none}
+#s2:checked ~ .readout .v2{display:block}
+#s3:checked ~ .readout .v2{display:none}
+#s3:checked ~ .readout .v3{display:block}
+#s4:checked ~ .readout .v3{display:none}
+#s4:checked ~ .readout .v4{display:block}
+#s5:checked ~ .readout .v4{display:none}
+#s5:checked ~ .readout .v5{display:block}
+
+#s1:checked ~ .k1{display:none}
+#s1:checked ~ .k2{display:block}
+#s2:checked ~ .k2{display:none}
+#s2:checked ~ .k3{display:block}
+#s3:checked ~ .k3{display:none}
+#s3:checked ~ .k4{display:block}
+#s4:checked ~ .k4{display:none}
+#s4:checked ~ .k5{display:block}
+#s5:checked ~ .k5{display:none}
+#s5:checked ~ .wall{display:block}
+
+#s1:checked ~ .memblock .m0{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
+#s1:checked ~ .memblock .m1{background:var(--css);border-color:var(--css);color:#fff}
+#s2:checked ~ .memblock .m1{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
+#s2:checked ~ .memblock .m2{background:var(--css);border-color:var(--css);color:#fff}
+#s3:checked ~ .memblock .m2{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
+#s3:checked ~ .memblock .m3{background:var(--css);border-color:var(--css);color:#fff}
+#s4:checked ~ .memblock .m3{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
+#s4:checked ~ .memblock .m4{background:var(--css);border-color:var(--css);color:#fff}
+#s5:checked ~ .memblock .m4{background:#F4F6F7;border-color:var(--rule);color:var(--ink-soft)}
+#s5:checked ~ .memblock .m5{background:var(--css);border-color:var(--css);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Démonstration en classe</p>
+  <h1>HTML, CSS, JavaScript&nbsp;: qui sait compter&nbsp;?</h1>
+  <p class="thesis">Trois fois la même page. Un nombre, un bouton. Cliquez sur les trois avant de lire quoi que ce soit — la différence n'est pas une question de difficulté, mais de <strong>ce que chaque langage est capable de retenir et de décider</strong>.</p>
+</header>
+
+<div class="toolbar">
+  <button type="button" id="toggle-code" aria-expanded="false">Afficher le code</button>
+  <button type="button" id="reset">Tout remettre à zéro</button>
+  <span class="aside">cette barre d'outils est en JavaScript, évidemment</span>
+</div>
+
+<main class="bench">
+
+  <!-- =============== 1. HTML =============== -->
+  <section class="panel p-html">
+    <div class="panel-head">
+      <span class="stack">HTML seul</span>
+      <p class="verdict">Ne retient rien</p>
+    </div>
+    <div class="panel-body">
+
+      <div class="readout">0</div>
+      <button class="btn" type="button">+1</button>
+
+      <div>
+        <p class="mem-label">Mémoire</p>
+        <div class="mem">
+          <div class="cell empty">aucune</div>
+        </div>
+        <p class="mem-note">Pas une seule case où ranger une valeur.</p>
+      </div>
+
+      <div class="code code-hidden">
+<pre><span class="k">&lt;</span><span class="t">p</span> <span class="a">id</span>=<span class="s">"valeur"</span><span class="k">&gt;</span>0<span class="k">&lt;/</span><span class="t">p</span><span class="k">&gt;</span>
+<span class="k">&lt;</span><span class="t">button</span><span class="k">&gt;</span>+1<span class="k">&lt;/</span><span class="t">button</span><span class="k">&gt;</span></pre>
+      </div>
+
+      <p class="note">Le bouton est un <b>vrai</b> bouton : focus clavier, annoncé par un lecteur d'écran, enfoncé au clic. Mais <code>&lt;button&gt;</code> veut dire « voici un bouton », jamais « voici ce qu'il fait ».</p>
+    </div>
+  </section>
+
+  <!-- =============== 2. CSS =============== -->
+  <section class="panel p-css">
+    <div class="panel-head">
+      <span class="stack">HTML + CSS</span>
+      <p class="verdict">Retient ce qu'on a écrit d'avance</p>
+    </div>
+    <div class="panel-body">
+
+      <input type="checkbox" id="s1" class="sw" tabindex="-1" aria-hidden="true">
+      <input type="checkbox" id="s2" class="sw" tabindex="-1" aria-hidden="true">
+      <input type="checkbox" id="s3" class="sw" tabindex="-1" aria-hidden="true">
+      <input type="checkbox" id="s4" class="sw" tabindex="-1" aria-hidden="true">
+      <input type="checkbox" id="s5" class="sw" tabindex="-1" aria-hidden="true">
+
+      <div class="readout">
+        <span class="v0">0</span><span class="v1">1</span><span class="v2">2</span><span class="v3">3</span><span class="v4">4</span><span class="v5">5</span>
+      </div>
+
+      <label class="btn k1" for="s1">+1</label>
+      <label class="btn k2" for="s2">+1</label>
+      <label class="btn k3" for="s3">+1</label>
+      <label class="btn k4" for="s4">+1</label>
+      <label class="btn k5" for="s5">+1</label>
+
+      <div class="wall">Bloqué à 5. Pour aller jusqu'à 6, il faut rouvrir la feuille de style et écrire un état de plus, à la main.</div>
+
+      <div class="memblock">
+        <p class="mem-label">Mémoire</p>
+        <div class="mem">
+          <div class="cell m0 on">0</div>
+          <div class="cell m1">1</div>
+          <div class="cell m2">2</div>
+          <div class="cell m3">3</div>
+          <div class="cell m4">4</div>
+          <div class="cell m5">5</div>
+        </div>
+        <p class="mem-note">Six cases taillées à l'avance. On se contente d'allumer la bonne.</p>
+      </div>
+
+      <div class="code code-hidden">
+<pre><span class="c">/* un état = quatre règles, à recopier pour chaque nombre */</span>
+<span class="t">#s1</span><span class="k">:checked</span> ~ <span class="t">.readout</span> <span class="t">.v0</span> { <span class="a">display</span>: <span class="s">none</span>; }
+<span class="t">#s1</span><span class="k">:checked</span> ~ <span class="t">.readout</span> <span class="t">.v1</span> { <span class="a">display</span>: <span class="s">block</span>; }
+<span class="t">#s1</span><span class="k">:checked</span> ~ <span class="t">.k1</span> { <span class="a">display</span>: <span class="s">none</span>; }
+<span class="t">#s1</span><span class="k">:checked</span> ~ <span class="t">.k2</span> { <span class="a">display</span>: <span class="s">block</span>; }
+<span class="c">/* … puis on recommence pour 2, 3, 4, 5, 6, 7 … */</span></pre>
+      </div>
+
+      <p class="note">Ça compte — mais <b>rien n'a été calculé</b>. Les nombres 0 à 5 sont écrits en dur dans le HTML ; le CSS les montre et les cache. Il ignore que 2 vient après 1. Il ne connaît même pas la notion de « suivant ».</p>
+    </div>
+  </section>
+
+  <!-- =============== 3. JS =============== -->
+  <section class="panel p-js">
+    <div class="panel-head">
+      <span class="stack">HTML + CSS + JS</span>
+      <p class="verdict">Retient et calcule</p>
+    </div>
+    <div class="panel-body">
+
+      <div class="readout" id="js-readout" aria-live="polite">0</div>
+      <button class="btn" type="button" id="js-inc">+1</button>
+
+      <div>
+        <p class="mem-label">Mémoire</p>
+        <div class="mem">
+          <div class="cell live" id="js-cell">n = 0</div>
+          <div class="cell empty">illimité</div>
+        </div>
+        <p class="mem-note">Une seule case. Son contenu change tout seul.</p>
+      </div>
+
+      <div class="code code-hidden">
+<pre><span class="k">let</span> n = <span class="a">0</span>;
+
+bouton.<span class="t">addEventListener</span>(<span class="s">'click'</span>, () =&gt; {
+  n = n + <span class="a">1</span>;
+  valeur.<span class="a">textContent</span> = n;
+});</pre>
+      </div>
+
+      <p class="note">Trois lignes. Le nombre <b>5000 n'est écrit nulle part</b> dans ce fichier, et pourtant on peut y arriver. C'est la différence : une valeur en mémoire, et une opération dessus.</p>
+    </div>
+  </section>
+
+</main>
+
+<section class="after">
+  <h2>Les trois questions à poser une fois que tout le monde a cliqué</h2>
+  <p class="sub">Elles vont crescendo. La troisième est celle qui compte vraiment.</p>
+  <ol class="qs">
+    <li>
+      <p class="ask">« Faites-moi compter jusqu'à 1000. »</p>
+      <p class="ans"><b>JS</b> : on ne touche à rien, c'est déjà le cas. <b>CSS</b> : environ 4000 lignes à écrire.</p>
+    </li>
+    <li>
+      <p class="ask">« Ajoutez-moi un bouton −1. »</p>
+      <p class="ans"><b>JS</b> : <code>n = n − 1</code>, une ligne. <b>CSS</b> : il faut refaire toute la machinerie en sens inverse.</p>
+    </li>
+    <li>
+      <p class="ask">« Affichez "beaucoup" au-delà de 10. »</p>
+      <p class="ans"><b>JS</b> : <code>if (n &gt; 10)</code>. <b>CSS</b> : impossible. Aucune comparaison n'existe dans le langage.</p>
+    </li>
+  </ol>
+
+  <p class="closer">Le CSS peut <em>montrer</em> un résultat préparé à l'avance.<br>Le JavaScript peut <em>produire</em> un résultat qu'on n'avait pas prévu.</p>
+</section>
+
+</div>
+
+<script>
+(function () {
+  var n = 0;
+  var out = document.getElementById('js-readout');
+  var cell = document.getElementById('js-cell');
+
+  document.getElementById('js-inc').addEventListener('click', function () {
+    n = n + 1;
+    out.textContent = n;
+    cell.textContent = 'n = ' + n;
+  });
+
+  var blocks = document.querySelectorAll('.code');
+  var toggle = document.getElementById('toggle-code');
+  var shown = false;
+
+  toggle.addEventListener('click', function () {
+    shown = !shown;
+    for (var i = 0; i < blocks.length; i++) {
+      blocks[i].classList.toggle('code-hidden', !shown);
+    }
+    toggle.textContent = shown ? 'Masquer le code' : 'Afficher le code';
+    toggle.setAttribute('aria-expanded', String(shown));
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    n = 0;
+    out.textContent = '0';
+    cell.textContent = 'n = 0';
+    var sw = document.querySelectorAll('.sw');
+    for (var j = 0; j < sw.length; j++) sw[j].checked = false;
+  });
+})();
+</script>
+</body>
+</html>

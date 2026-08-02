@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier de dessin — appeler des fonctions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6EAEC;
+  --paper:#FFFFFF;
+  --ink:#12171A;
+  --ink-soft:#5C666D;
+  --rule:#C6CFD4;
+  --js:#0C6A53;
+  --js-bg:#E2F1EC;
+  --warn:#9E5A15;
+  --warn-bg:#FBF0E1;
+  --err:#A32D2D;
+  --err-bg:#FBEAEA;
+  --editor:#10161A;
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:let(--bg);color:let(--ink);
+  font-family:let(--body);font-size:16px;line-height:1.55;
+  padding:clamp(18px,3vw,36px) clamp(14px,3vw,32px) 56px;
+}
+.wrap{max-width:1500px;margin:0 auto}
+
+/* ---------- en-tête ---------- */
+.eyebrow{font-family:let(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:let(--ink-soft);margin:0 0 10px}
+h1{font-family:let(--display);font-weight:800;font-size:clamp(28px,4vw,44px);line-height:1.03;letter-spacing:-.025em;margin:0 0 12px}
+.brief{color:let(--ink-soft);max-width:70ch;margin:0 0 22px}
+.brief code{font-family:let(--mono);font-size:.92em;background:let(--paper);border:1px solid let(--rule);border-radius:2px;padding:1px 5px;color:let(--ink)}
+
+/* ---------- missions ---------- */
+.missions{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0;border-top:1px solid let(--rule);border-bottom:1px solid let(--rule);margin-bottom:22px}
+.missions .lead{font-family:let(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:let(--ink-soft);align-self:center;margin-right:6px}
+.mission{font-family:let(--body);font-size:14px;background:transparent;border:1px solid let(--rule);border-radius:2px;padding:7px 13px;cursor:pointer;color:let(--ink);transition:background .12s,border-color .12s}
+.mission:hover{background:let(--paper);border-color:let(--ink-soft)}
+.mission[aria-pressed="true"]{background:let(--ink);border-color:let(--ink);color:#fff}
+
+/* ---------- disposition ---------- */
+.studio{display:grid;grid-template-columns:270px minmax(0,1fr) 420px;gap:18px;align-items:start}
+@media (max-width:1240px){.studio{grid-template-columns:250px minmax(0,1fr)}.pane-out{grid-column:1/-1}}
+@media (max-width:820px){.studio{grid-template-columns:1fr}.pane-out{grid-column:auto}}
+
+.pane{background:let(--paper);border:1px solid let(--rule);border-radius:3px;overflow:hidden}
+.pane-head{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid let(--rule)}
+.pane-head h2{font-family:let(--mono);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:let(--ink-soft);margin:0}
+.pane-head .spacer{margin-left:auto}
+
+/* ---------- boîte à outils ---------- */
+.tools{max-height:640px;overflow-y:auto;padding:6px}
+.tool{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:2px;padding:9px 10px;cursor:pointer;font-family:let(--body)}
+.tool:hover{background:let(--js-bg)}
+.tool .sig{font-family:let(--mono);font-size:13px;color:let(--js);display:block;word-break:break-word}
+.tool .what{font-size:13px;color:let(--ink-soft);display:block;margin-top:2px;line-height:1.4}
+.group{font-family:let(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:let(--ink-soft);padding:14px 10px 5px;margin:0}
+.group:first-child{padding-top:6px}
+.hintbar{font-size:13px;color:let(--ink-soft);padding:10px 15px;border-top:1px solid let(--rule);background:#F4F6F7;line-height:1.45}
+
+/* ---------- éditeur ---------- */
+.editor-wrap{background:let(--editor);position:relative}
+#code{
+  display:block;width:100%;min-height:440px;resize:vertical;
+  background:transparent;border:0;outline:none;
+  color:#D5DEE3;font-family:let(--mono);font-size:14px;line-height:1.7;
+  padding:16px 18px;tab-size:2;
+}
+#code::selection{background:#2C6152}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:11px 15px;border-top:1px solid let(--rule)}
+.btn{font-family:let(--body);font-size:14px;border:1px solid let(--rule);border-radius:2px;background:transparent;color:let(--ink);padding:8px 14px;cursor:pointer;transition:background .12s,border-color .12s}
+.btn:hover{background:#F4F6F7;border-color:let(--ink-soft)}
+.btn-go{background:let(--js-bg);border-color:let(--js);color:let(--js);font-weight:600}
+.btn-go:hover{background:#D3E9E2;border-color:let(--js)}
+.auto{margin-left:auto;font-family:let(--mono);font-size:12px;color:let(--ink-soft);display:flex;align-items:center;gap:6px;cursor:pointer}
+
+/* ---------- sortie ---------- */
+.stage{padding:16px;display:flex;justify-content:center;background:#F4F6F7}
+.stage-inner{position:relative;width:100%;max-width:400px;aspect-ratio:1}
+#toile{width:100%;height:100%;background:#fff;border:1px solid let(--rule);border-radius:2px;display:block}
+#repere{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:2px}
+.gridtoggle{display:flex;align-items:center;gap:7px;font-family:let(--mono);font-size:12px;color:let(--ink-soft);padding:9px 15px;border-top:1px solid let(--rule);cursor:pointer}
+.console{font-family:let(--mono);font-size:13px;line-height:1.55;padding:12px 15px;border-top:1px solid let(--rule);min-height:56px}
+.console.ok{color:let(--js);background:let(--js-bg)}
+.console.ko{color:let(--err);background:let(--err-bg)}
+.console.idle{color:let(--ink-soft)}
+.console .fix{display:block;color:let(--ink-soft);margin-top:5px;font-family:let(--body);font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:let(--rule);display:inline-block;flex:0 0 auto}
+.dot.ok{background:let(--js)}
+.dot.ko{background:let(--err)}
+
+/* ---------- divers ---------- */
+:focus-visible{outline:2px solid let(--js);outline-offset:2px}
+#code:focus-visible{outline-offset:-2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Activité 1 · JavaScript</p>
+  <h1>Atelier de dessin</h1>
+  <p class="brief">Toutes les fonctions ci-dessous existent déjà : vous n'avez pas à les écrire, seulement à les <strong>appeler</strong>, une par ligne, de haut en bas. Chaque ligne se termine par un <<strong>point-virgule</strong>. Le point <code>(0, 0)</code> est en haut à gauche de la toile, <code>(400, 400)</code> en bas à droite.</p>
+  <p class="brief"><strong>Règle importante :</strong> ce qui est dessiné en dernier passe devant. Comme en peinture — la dernière couche recouvre les précédentes.</p>
+</header>
+
+<div class="missions" id="missions">
+  <span class="lead">Missions</span>
+</div>
+
+<main class="studio">
+
+  <!-- ---------- boîte à outils ---------- -->
+  <section class="pane">
+    <div class="pane-head"><h2>Boîte à outils</h2></div>
+    <div class="tools" id="tools"></div>
+    <p class="hintbar">Les couleurs s'écrivent en français entre guillemets : <code>"rouge"</code>, <code>"bleu"</code>, <code>"jaune"</code>, <code>"vert"</code>, <code>"orange"</code>, <code>"violet"</code>, <code>"rose"</code>, <code>"brun"</code>, <code>"noir"</code>, <code>"blanc"</code>, <code>"gris"</code>.</p>
+  </section>
+
+  <!-- ---------- éditeur ---------- -->
+  <section class="pane">
+    <div class="pane-head">
+      <h2>Votre code</h2>
+      <span class="spacer"></span>
+      <span class="sr">Zone de saisie du code</span>
+    </div>
+    <div class="editor-wrap">
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocorrect="off" aria-label="Votre code JavaScript"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn-go" id="run" type="button">Lancer le dessin</button>
+      <button class="btn" id="clear" type="button">Vider</button>
+      <button class="btn" id="restore" type="button">Recharger la mission</button>
+      <label class="auto"><input type="checkbox" id="live" checked> aperçu en direct</label>
+    </div>
+  </section>
+
+  <!-- ---------- sortie ---------- -->
+  <section class="pane pane-out">
+    <div class="pane-head"><span class="dot" id="dot"></span><h2>Résultat</h2></div>
+    <div class="stage">
+      <div class="stage-inner">
+        <canvas id="toile" width="400" height="400" aria-label="Résultat du dessin"></canvas>
+        <canvas id="repere" width="400" height="400" aria-hidden="true"></canvas>
+      </div>
+    </div>
+    <label class="gridtoggle"><input type="checkbox" id="grille" checked> afficher le repère des coordonnées</label>
+    <div class="console idle" id="console">En attente de votre premier appel de fonction.</div>
+  </section>
+
+</main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===== bibliothèque mise à disposition des élèves ===== */
+
+  let CV = document.getElementById('toile');
+  let CX = CV.getContext('2d');
+  let SIZE = 400;
+
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  CV.width = SIZE * dpr; CV.height = SIZE * dpr;
+  CX.scale(dpr, dpr);
+
+  let PALETTE = {
+    rouge:'#D93B3B', bleu:'#2A6FD1', jaune:'#EFC030', vert:'#3E9145',
+    orange:'#E07B25', violet:'#7A54B5', rose:'#DE6C9C', brun:'#8A5A32',
+    noir:'#12171A', blanc:'#FFFFFF', gris:'#98A3A9', cyan:'#2AA8B5',
+    turquoise:'#2AA8B5', 'vert clair':'#8CC63F', 'bleu clair':'#7BB6EF'
+  };
+
+  function teinte(c) {
+    if (typeof c !== 'string') return '#12171A';
+    let k = c.trim().toLowerCase();
+    return PALETTE[k] || c;
+  }
+
+  let LIMITE = 6000, dessins = 0, depart = 0;
+
+  function budget() {
+    if (++dessins > LIMITE) throw new Error("Trop de formes d'un coup (plus de " + LIMITE + "). Réduis le nombre de tours de boucle.");
+  }
+
+  function __tick() {
+    if (Date.now() - depart > 1500) throw new Error("Le code tourne depuis trop longtemps — il y a sans doute une boucle qui ne s'arrête jamais.");
+  }
+
+  let API = {
+    effacer: function () {
+      CX.clearRect(0, 0, SIZE, SIZE);
+    },
+    fond: function (c) {
+      budget(); CX.save(); CX.fillStyle = teinte(c); CX.fillRect(0, 0, SIZE, SIZE); CX.restore();
+    },
+    couleur: function (c) { CX.fillStyle = CX.strokeStyle = teinte(c); },
+    epaisseur: function (n) { CX.lineWidth = Math.max(0.5, Number(n) || 1); },
+    cercle: function (x, y, r) {
+      budget(); CX.beginPath(); CX.arc(+x, +y, Math.abs(+r), 0, Math.PI * 2); CX.fill();
+    },
+    contourCercle: function (x, y, r) {
+      budget(); CX.beginPath(); CX.arc(+x, +y, Math.abs(+r), 0, Math.PI * 2); CX.stroke();
+    },
+    rectangle: function (x, y, l, h) { budget(); CX.fillRect(+x, +y, +l, +h); },
+    contourRectangle: function (x, y, l, h) { budget(); CX.strokeRect(+x, +y, +l, +h); },
+    triangle: function (x1, y1, x2, y2, x3, y3) {
+      budget(); CX.beginPath(); CX.moveTo(+x1, +y1); CX.lineTo(+x2, +y2); CX.lineTo(+x3, +y3);
+      CX.closePath(); CX.fill();
+    },
+    ligne: function (x1, y1, x2, y2) {
+      budget(); CX.beginPath(); CX.moveTo(+x1, +y1); CX.lineTo(+x2, +y2); CX.stroke();
+    },
+    texte: function (mot, x, y, taille) {
+      budget(); CX.save();
+      CX.font = '500 ' + (Number(taille) || 20) + 'px "IBM Plex Mono", monospace';
+      CX.fillText(String(mot), +x, +y); CX.restore();
+    },
+    hasard: function (min, max) {
+      let a = Number(min) || 0, b = (max === undefined ? 400 : Number(max));
+      return Math.floor(Math.random() * (b - a + 1)) + a;
+    },
+    tourner: function (degres) {
+      CX.translate(SIZE / 2, SIZE / 2);
+      CX.rotate((Number(degres) || 0) * Math.PI / 180);
+      CX.translate(-SIZE / 2, -SIZE / 2);
+    }
+  };
+
+  /* ===== catalogue affiché dans la boîte à outils ===== */
+
+  let CATALOGUE = [
+    ['Préparer la toile', [
+      ['effacer()', "Repart d'une toile vide", 'effacer();'],
+      ['fond("bleu")', 'Remplit toute la toile', 'fond("bleu");'],
+      ['couleur("rouge")', 'Change la couleur des formes suivantes', 'couleur("rouge");'],
+      ['epaisseur(4)', "Épaisseur des traits et des contours", 'epaisseur(4);']
+    ]],
+    ['Formes pleines', [
+      ['cercle(x, y, rayon)', 'Un disque centré sur (x, y)', 'cercle(200, 200, 60);'],
+      ['rectangle(x, y, largeur, hauteur)', 'Coin haut-gauche en (x, y)', 'rectangle(100, 100, 120, 80);'],
+      ['triangle(x1, y1, x2, y2, x3, y3)', 'Trois sommets à relier', 'triangle(200, 80, 300, 240, 100, 240);']
+    ]],
+    ['Traits et contours', [
+      ['ligne(x1, y1, x2, y2)', 'Un segment entre deux points', 'ligne(50, 50, 350, 350);'],
+      ['contourCercle(x, y, rayon)', 'Un cercle vide', 'contourCercle(200, 200, 90);']
+    ]],
+    ['Écrire', [
+      ['texte("Salut", x, y, taille)', 'Écrit un mot sur la toile', 'texte("Salut", 140, 210, 32);']
+    ]]
+  ];
+
+  let tools = document.getElementById('tools');
+  CATALOGUE.forEach(function (grp) {
+    let h = document.createElement('p');
+    h.className = 'group'; h.textContent = grp[0];
+    tools.appendChild(h);
+    grp[1].forEach(function (f) {
+      let b = document.createElement('button');
+      b.type = 'button'; b.className = 'tool';
+      b.innerHTML = '<span class="sig"></span><span class="what"></span>';
+      b.querySelector('.sig').textContent = f[0];
+      b.querySelector('.what').textContent = f[1];
+      b.addEventListener('click', function () { inserer(f[2]); });
+      tools.appendChild(b);
+    });
+  });
+
+  /* ===== missions ===== */
+
+  let MISSIONS = [
+    ['1 · Le premier appel',
+      "// Une seule ligne suffit à dessiner quelque chose.\n// Change les trois nombres et regarde ce qui bouge à droite.\n\ncercle(200, 200, 80);\n"],
+
+    ['2 · Un feu de circulation',
+      "// Objectif : trois lampes empilées dans un boîtier gris.\n// La lampe rouge est déjà faite. Ajoute les deux autres.\n\nfond(\"blanc\");\n\ncouleur(\"gris\");\nrectangle(160, 60, 80, 220);\n\ncouleur(\"rouge\");\ncercle(200, 105, 25);\n\n// À toi : la lampe orange au milieu (hauteur 170)\n// puis la lampe verte en bas (hauteur 235).\n// N'oublie pas de changer la couleur avant chaque cercle !\n"],
+
+    ['3 · Un visage',
+      "// Objectif : un visage complet.\n// La tête et l'oeil gauche sont faits.\n\nfond(\"bleu clair\");\n\ncouleur(\"jaune\");\ncercle(200, 200, 120);\n\ncouleur(\"noir\");\ncercle(160, 170, 12);\n\n// À toi : le deuxième oeil (même hauteur, plus à droite).\n// Puis la bouche, avec ces deux lignes :\n// epaisseur(6);\n// ligne(150, 250, 250, 250);\n"],
+
+    ['4 · Une maison',
+      "// Objectif : une maison avec un toit, une porte et une fenêtre.\n// Les murs et le toit sont posés.\n\nfond(\"bleu clair\");\n\ncouleur(\"brun\");\nrectangle(120, 200, 160, 140);\n\ncouleur(\"rouge\");\ntriangle(120, 200, 200, 120, 280, 200);\n\n// À toi : une porte (un rectangle foncé, en bas, au milieu)\n// et une fenêtre (un petit carré blanc).\n"],
+
+    ['5 · Le drapeau suisse',
+      "// Objectif : le drapeau suisse.\n// Le carré rouge est fait. La croix blanche se dessine\n// avec DEUX rectangles blancs posés par-dessus.\n\ncouleur(\"rouge\");\nrectangle(50, 50, 300, 300);\n\ncouleur(\"blanc\");\nrectangle(180, 110, 40, 180);\n\n// À toi : le rectangle couché de la croix.\n\n// Puis une expérience : remonte les deux lignes rouges\n// tout en bas du fichier. Que devient le drapeau ?\n"],
+
+    ['6 · Terrain libre',
+      "// Aucune consigne. Dessine ce que tu veux.\n// La boîte à outils de gauche est ta seule limite.\n\nfond(\"blanc\");\ncouleur(\"violet\");\ncercle(200, 200, 100);\n"],
+
+  ];
+
+  let code = document.getElementById('code');
+  let cons = document.getElementById('console');
+  let dot = document.getElementById('dot');
+  let live = document.getElementById('live');
+  let courante = 0;
+
+  let bar = document.getElementById('missions');
+  MISSIONS.forEach(function (m, i) {
+    let b = document.createElement('button');
+    b.type = 'button'; b.className = 'mission'; b.textContent = m[0];
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function () { charger(i); });
+    bar.appendChild(b);
+  });
+
+  function charger(i) {
+    courante = i;
+    code.value = MISSIONS[i][1];
+    let bs = bar.querySelectorAll('.mission');
+    for (let k = 0; k < bs.length; k++) bs[k].setAttribute('aria-pressed', String(k === i));
+    sauver(); lancer();
+    code.focus();
+  }
+
+  function inserer(txt) {
+    let d = code.selectionStart, f = code.selectionEnd, v = code.value;
+    let avant = v.slice(0, d);
+    let saut = (avant === '' || avant.slice(-1) === '\n') ? '' : '\n';
+    code.value = avant + saut + txt + '\n' + v.slice(f);
+    let pos = d + saut.length + txt.length + 1;
+    code.setSelectionRange(pos, pos);
+    code.focus(); sauver(); lancer();
+  }
+
+  /* ===== garde-fou contre les boucles infinies ===== */
+
+  function garde(src) {
+    return src
+      .replace(/\b(for|while)\b([^\n{]*)\{/g, '$1$2{ __tick();')
+      .replace(/\bdo\s*\{/g, 'do { __tick();');
+  }
+
+  /* ===== exécution ===== */
+
+  function lancer() {
+    CX.setTransform(dpr, 0, 0, dpr, 0, 0);
+    CX.clearRect(0, 0, SIZE, SIZE);
+    CX.fillStyle = '#12171A'; CX.strokeStyle = '#12171A'; CX.lineWidth = 2;
+    CX.lineCap = 'round'; CX.lineJoin = 'round';
+    dessins = 0; depart = Date.now();
+
+    let src = code.value;
+    if (!src.replace(/\/\/[^\n]*/g, '').trim()) {
+      etat('idle', 'La toile attend. Clique sur une fonction à gauche pour commencer.');
+      return;
+    }
+
+    let noms = Object.keys(API);
+    let args = noms.map(function (n) { return API[n]; });
+    noms.push('__tick'); args.push(__tick);
+
+    try {
+      let f = new Function(noms.join(','), '"use strict";\n' + garde(src));
+      f.apply(null, args);
+      etat('ok', dessins + (dessins > 1 ? ' formes dessinées.' : ' forme dessinée.'));
+    } catch (e) {
+      etat('ko', message(e), conseil(e));
+    }
+  }
+
+  function message(e) {
+    let m = e && e.message ? e.message : String(e);
+    if (/is not defined/.test(m)) {
+      let nom = m.split(' ')[0];
+      return 'Le mot « ' + nom + ' » est inconnu.';
+    }
+    if (/Unexpected|Invalid or unexpected token/.test(m)) return 'La phrase de code est mal formée.';
+    if (/missing \) after|Unexpected end of input/.test(m)) return 'Il manque une parenthèse ou une accolade fermante.';
+    return m;
+  }
+
+  function conseil(e) {
+    let m = e && e.message ? e.message : '';
+    if (/is not defined/.test(m)) return 'Vérifie l\'orthographe, ou mets des guillemets si c\'est une couleur : couleur("rouge") et non couleur(rouge).';
+    if (/is not a function/.test(m)) return 'Cette fonction n\'existe pas dans la boîte à outils. Regarde la liste à gauche.';
+    if (/Unexpected end of input/.test(m)) return 'Compte tes accolades { } : il en faut autant d\'ouvertes que de fermées.';
+    if (/boucle qui ne s\'arrête/.test(m)) return 'Dans un for, vérifie que le compteur augmente bien à chaque tour.';
+    return 'Relis la dernière ligne que tu as ajoutée.';
+  }
+
+  function etat(type, txt, extra) {
+    cons.className = 'console ' + (type === 'ok' ? 'ok' : type === 'ko' ? 'ko' : 'idle');
+    dot.className = 'dot' + (type === 'ok' ? ' ok' : type === 'ko' ? ' ko' : '');
+    cons.textContent = txt;
+    if (extra) {
+      let s = document.createElement('span');
+      s.className = 'fix'; s.textContent = extra;
+      cons.appendChild(s);
+    }
+  }
+
+  /* ===== repère des coordonnées ===== */
+
+  let RP = document.getElementById('repere');
+  let RX = RP.getContext('2d');
+  RP.width = SIZE * dpr; RP.height = SIZE * dpr;
+  RX.scale(dpr, dpr);
+
+  function repere(actif) {
+    RX.clearRect(0, 0, SIZE, SIZE);
+    if (!actif) return;
+    RX.save();
+    RX.strokeStyle = 'rgba(18,23,26,.14)';
+    RX.lineWidth = 1;
+    for (let v = 50; v < SIZE; v += 50) {
+      RX.beginPath(); RX.moveTo(v + .5, 0); RX.lineTo(v + .5, SIZE); RX.stroke();
+      RX.beginPath(); RX.moveTo(0, v + .5); RX.lineTo(SIZE, v + .5); RX.stroke();
+    }
+    RX.font = '400 10px "IBM Plex Mono", monospace';
+    RX.fillStyle = 'rgba(18,23,26,.55)';
+    for (let g = 50; g < SIZE; g += 50) {
+      RX.textAlign = 'center'; RX.textBaseline = 'top';
+      RX.fillText(String(g), g, 3);
+      RX.textAlign = 'left'; RX.textBaseline = 'middle';
+      RX.fillText(String(g), 3, g);
+    }
+    RX.textAlign = 'left'; RX.textBaseline = 'top';
+    RX.fillText('0,0', 3, 3);
+    RX.restore();
+  }
+
+  let grille = document.getElementById('grille');
+  grille.addEventListener('change', function () { repere(grille.checked); });
+  repere(true);
+
+  /* ===== sauvegarde locale ===== */
+
+  function sauver() {
+    try { localStorage.setItem('atelier-dessin', code.value); } catch (e) {}
+  }
+  function restaurer() {
+    try { return localStorage.getItem('atelier-dessin'); } catch (e) { return null; }
+  }
+
+  /* ===== branchements ===== */
+
+  let minuteur;
+  code.addEventListener('input', function () {
+    sauver();
+    if (!live.checked) return;
+    clearTimeout(minuteur);
+    minuteur = setTimeout(lancer, 400);
+  });
+
+  code.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      let d = code.selectionStart;
+      code.value = code.value.slice(0, d) + '  ' + code.value.slice(code.selectionEnd);
+      code.setSelectionRange(d + 2, d + 2);
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); lancer(); }
+  });
+
+  document.getElementById('run').addEventListener('click', lancer);
+  document.getElementById('clear').addEventListener('click', function () {
+    code.value = ''; sauver(); lancer(); code.focus();
+  });
+  document.getElementById('restore').addEventListener('click', function () { charger(courante); });
+  live.addEventListener('change', function () { if (live.checked) lancer(); });
+
+  let garde_ = restaurer();
+  if (garde_ && garde_.trim()) {
+    code.value = garde_;
+    bar.querySelectorAll('.mission')[0].setAttribute('aria-pressed', 'false');
+    lancer();
+  } else {
+    charger(0);
+  }
+})();
+</script>
+</body>
+</html>

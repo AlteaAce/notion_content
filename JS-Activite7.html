@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier de dessin — les variables</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6EAEC;
+  --paper:#FFFFFF;
+  --ink:#12171A;
+  --ink-soft:#5C666D;
+  --rule:#C6CFD4;
+  --js:#0C6A53;
+  --js-bg:#E2F1EC;
+  --warn:#9E5A15;
+  --warn-bg:#FBF0E1;
+  --err:#A32D2D;
+  --err-bg:#FBEAEA;
+  --editor:#10161A;
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--body);font-size:16px;line-height:1.55;
+  padding:clamp(18px,3vw,36px) clamp(14px,3vw,32px) 56px;
+}
+.wrap{max-width:1500px;margin:0 auto}
+
+/* ---------- en-tête ---------- */
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);line-height:1.03;letter-spacing:-.025em;margin:0 0 12px}
+.brief{color:var(--ink-soft);max-width:70ch;margin:0 0 22px}
+.brief code{font-family:var(--mono);font-size:.92em;background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:1px 5px;color:var(--ink)}
+
+/* ---------- missions ---------- */
+.missions{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:22px}
+.missions .lead{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);align-self:center;margin-right:6px}
+.mission{font-family:var(--body);font-size:14px;background:transparent;border:1px solid var(--rule);border-radius:2px;padding:7px 13px;cursor:pointer;color:var(--ink);transition:background .12s,border-color .12s}
+.mission:hover{background:var(--paper);border-color:var(--ink-soft)}
+.mission[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ---------- disposition ---------- */
+.studio{display:grid;grid-template-columns:270px minmax(0,1fr) 420px;gap:18px;align-items:start}
+@media (max-width:1240px){.studio{grid-template-columns:250px minmax(0,1fr)}.pane-out{grid-column:1/-1}}
+@media (max-width:820px){.studio{grid-template-columns:1fr}.pane-out{grid-column:auto}}
+
+.pane{background:var(--paper);border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.pane-head{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid var(--rule)}
+.pane-head h2{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:0}
+.pane-head .spacer{margin-left:auto}
+
+/* ---------- boîte à outils ---------- */
+.tools{max-height:640px;overflow-y:auto;padding:6px}
+.tool{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:2px;padding:9px 10px;cursor:pointer;font-family:var(--body)}
+.tool:hover{background:var(--js-bg)}
+.tool .sig{font-family:var(--mono);font-size:13px;color:var(--js);display:block;word-break:break-word}
+.tool .what{font-size:13px;color:var(--ink-soft);display:block;margin-top:2px;line-height:1.4}
+.group{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);padding:14px 10px 5px;margin:0}
+.group:first-child{padding-top:6px}
+.hintbar{font-size:13px;color:var(--ink-soft);padding:10px 15px;border-top:1px solid var(--rule);background:#F4F6F7;line-height:1.45}
+
+/* ---------- éditeur ---------- */
+.editor-wrap{background:var(--editor);position:relative}
+#code{
+  display:block;width:100%;min-height:440px;resize:vertical;
+  background:transparent;border:0;outline:none;
+  color:#D5DEE3;font-family:var(--mono);font-size:14px;line-height:1.7;
+  padding:16px 18px;tab-size:2;
+}
+#code::selection{background:#2C6152}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:11px 15px;border-top:1px solid var(--rule)}
+.btn{font-family:var(--body);font-size:14px;border:1px solid var(--rule);border-radius:2px;background:transparent;color:var(--ink);padding:8px 14px;cursor:pointer;transition:background .12s,border-color .12s}
+.btn:hover{background:#F4F6F7;border-color:var(--ink-soft)}
+.btn-go{background:var(--js-bg);border-color:var(--js);color:var(--js);font-weight:600}
+.btn-go:hover{background:#D3E9E2;border-color:var(--js)}
+.auto{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;cursor:pointer}
+
+/* ---------- sortie ---------- */
+.stage{padding:16px;display:flex;justify-content:center;background:#F4F6F7}
+.stage-inner{position:relative;width:100%;max-width:400px;aspect-ratio:1}
+#toile{width:100%;height:100%;background:#fff;border:1px solid var(--rule);border-radius:2px;display:block}
+#repere{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:2px}
+.inspect{padding:12px 15px;border-top:1px solid var(--rule);background:#F4F6F7}
+.inspect h3{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 9px}
+.vars{display:flex;flex-direction:column;gap:6px;margin:0}
+.vrow{display:flex;align-items:stretch;gap:0;font-family:var(--mono);font-size:14px}
+.vname{background:var(--paper);border:1px solid var(--rule);border-right:0;border-radius:2px 0 0 2px;padding:6px 10px;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vval{background:var(--js-bg);border:1px solid var(--js);border-radius:0 2px 2px 0;padding:6px 12px;color:var(--js);font-weight:500;font-variant-numeric:tabular-nums;margin-left:-1px}
+.vnone{font-size:13px;color:var(--ink-soft);font-family:var(--body);margin:0;line-height:1.45}
+.gridtoggle{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);padding:9px 15px;border-top:1px solid var(--rule);cursor:pointer}
+.console{font-family:var(--mono);font-size:13px;line-height:1.55;padding:12px 15px;border-top:1px solid var(--rule);min-height:56px}
+.console.ok{color:var(--js);background:var(--js-bg)}
+.console.ko{color:var(--err);background:var(--err-bg)}
+.console.idle{color:var(--ink-soft)}
+.console .fix{display:block;color:var(--ink-soft);margin-top:5px;font-family:var(--body);font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--rule);display:inline-block;flex:0 0 auto}
+.dot.ok{background:var(--js)}
+.dot.ko{background:var(--err)}
+
+/* ---------- divers ---------- */
+:focus-visible{outline:2px solid var(--js);outline-offset:2px}
+#code:focus-visible{outline-offset:-2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Exercice · JavaScript · les variables</p>
+  <h1>Atelier de dessin&nbsp;: donner un nom aux nombres</h1>
+  <p class="brief">Vous connaissez déjà les fonctions de dessin. Aujourd'hui on arrête d'écrire les nombres directement&nbsp;: on leur donne un <strong>nom</strong>. Une variable, c'est une étiquette collée sur une valeur.</p>
+  <p class="brief"><code>let taille = 60;</code> se lit&nbsp;: «&nbsp;je crée une étiquette nommée <code>taille</code>, et je mets 60 dedans&nbsp;». Ensuite, partout où vous écrivez <code>taille</code>, JavaScript lit 60.</p>
+  <p class="brief"><strong>Pourquoi c'est utile&nbsp;:</strong> vous changez la valeur à un seul endroit, et tout le dessin suit.</p>
+</header>
+
+<div class="missions" id="missions">
+  <span class="lead">Missions</span>
+</div>
+
+<main class="studio">
+
+  <!-- ---------- boîte à outils ---------- -->
+  <section class="pane">
+    <div class="pane-head"><h2>Boîte à outils</h2></div>
+    <div class="tools" id="tools"></div>
+    <p class="hintbar"><strong>Créer une variable :</strong> <code>let nom = valeur;</code> — toujours en haut du fichier, avant de s'en servir.<br><br>Les couleurs s'écrivent en français entre guillemets : <code>"rouge"</code>, <code>"bleu"</code>, <code>"jaune"</code>, <code>"vert"</code>, <code>"orange"</code>, <code>"violet"</code>, <code>"rose"</code>, <code>"brun"</code>, <code>"noir"</code>, <code>"blanc"</code>, <code>"gris"</code>.</p>
+  </section>
+
+  <!-- ---------- éditeur ---------- -->
+  <section class="pane">
+    <div class="pane-head">
+      <h2>Votre code</h2>
+      <span class="spacer"></span>
+      <span class="sr">Zone de saisie du code</span>
+    </div>
+    <div class="editor-wrap">
+      <textarea id="code" spellcheck="false" autocapitalize="off" autocorrect="off" aria-label="Votre code JavaScript"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn-go" id="run" type="button">Lancer le dessin</button>
+      <button class="btn" id="clear" type="button">Vider</button>
+      <button class="btn" id="restore" type="button">Recharger la mission</button>
+      <label class="auto"><input type="checkbox" id="live" checked> aperçu en direct</label>
+    </div>
+  </section>
+
+  <!-- ---------- sortie ---------- -->
+  <section class="pane pane-out">
+    <div class="pane-head"><span class="dot" id="dot"></span><h2>Résultat</h2></div>
+    <div class="stage">
+      <div class="stage-inner">
+        <canvas id="toile" width="400" height="400" aria-label="Résultat du dessin"></canvas>
+        <canvas id="repere" width="400" height="400" aria-hidden="true"></canvas>
+      </div>
+    </div>
+    <label class="gridtoggle"><input type="checkbox" id="grille" checked> afficher le repère des coordonnées</label>
+    <div class="inspect">
+      <h3>Inspecteur de variables</h3>
+      <div class="vars" id="vars" aria-live="polite"></div>
+    </div>
+    <div class="console idle" id="console">En attente de votre premier appel de fonction.</div>
+  </section>
+
+</main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===== bibliothèque mise à disposition des élèves ===== */
+
+  var CV = document.getElementById('toile');
+  var CX = CV.getContext('2d');
+  var SIZE = 400;
+
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  CV.width = SIZE * dpr; CV.height = SIZE * dpr;
+  CX.scale(dpr, dpr);
+
+  var PALETTE = {
+    rouge:'#D93B3B', bleu:'#2A6FD1', jaune:'#EFC030', vert:'#3E9145',
+    orange:'#E07B25', violet:'#7A54B5', rose:'#DE6C9C', brun:'#8A5A32',
+    noir:'#12171A', blanc:'#FFFFFF', gris:'#98A3A9', cyan:'#2AA8B5',
+    turquoise:'#2AA8B5', 'vert clair':'#8CC63F', 'bleu clair':'#7BB6EF'
+  };
+
+  function teinte(c) {
+    if (typeof c !== 'string') return '#12171A';
+    var k = c.trim().toLowerCase();
+    return PALETTE[k] || c;
+  }
+
+  var LIMITE = 6000, dessins = 0, depart = 0;
+
+  function budget() {
+    if (++dessins > LIMITE) throw new Error("Trop de formes d'un coup (plus de " + LIMITE + "). Réduis le nombre de tours de boucle.");
+  }
+
+  function __tick() {
+    if (Date.now() - depart > 1500) throw new Error("Le code tourne depuis trop longtemps — il y a sans doute une boucle qui ne s'arrête jamais.");
+  }
+
+  var etatDessin = { remplir: true, tracer: false, cRemplir: '#12171A', cTracer: '#12171A' };
+
+  function peindre() {
+    if (etatDessin.remplir) { CX.fillStyle = etatDessin.cRemplir; CX.fill(); }
+    if (etatDessin.tracer)  { CX.strokeStyle = etatDessin.cTracer;  CX.stroke(); }
+  }
+
+  var API = {
+    effacer: function () {
+      CX.clearRect(0, 0, SIZE, SIZE);
+    },
+    fond: function (c) {
+      budget(); CX.save(); CX.fillStyle = teinte(c); CX.fillRect(0, 0, SIZE, SIZE); CX.restore();
+    },
+    couleur: function (c) { etatDessin.cRemplir = teinte(c); etatDessin.remplir = true; },
+    contour: function (c) { etatDessin.cTracer = teinte(c); etatDessin.tracer = true; },
+    epaisseur: function (n) {
+      CX.lineWidth = Math.max(0.5, Number(n) || 1);
+      etatDessin.tracer = true;
+    },
+    sansContour: function () { etatDessin.tracer = false; },
+    sansRemplissage: function () { etatDessin.remplir = false; },
+    cercle: function (x, y, r) {
+      budget(); CX.beginPath(); CX.arc(+x, +y, Math.abs(+r), 0, Math.PI * 2); peindre();
+    },
+    rectangle: function (x, y, l, h) {
+      budget(); CX.beginPath(); CX.rect(+x, +y, +l, +h); peindre();
+    },
+    triangle: function (x1, y1, x2, y2, x3, y3) {
+      budget(); CX.beginPath(); CX.moveTo(+x1, +y1); CX.lineTo(+x2, +y2); CX.lineTo(+x3, +y3);
+      CX.closePath(); peindre();
+    },
+    ligne: function (x1, y1, x2, y2) {
+      budget(); CX.beginPath(); CX.moveTo(+x1, +y1); CX.lineTo(+x2, +y2);
+      CX.strokeStyle = etatDessin.tracer ? etatDessin.cTracer : etatDessin.cRemplir;
+      CX.stroke();
+    },
+    texte: function (mot, x, y, taille) {
+      budget(); CX.save();
+      CX.font = '500 ' + (Number(taille) || 20) + 'px "IBM Plex Mono", monospace';
+      CX.fillStyle = etatDessin.remplir ? etatDessin.cRemplir : etatDessin.cTracer;
+      CX.fillText(String(mot), +x, +y); CX.restore();
+    },
+    hasard: function (min, max) {
+      var a = Number(min) || 0, b = (max === undefined ? 400 : Number(max));
+      return Math.floor(Math.random() * (b - a + 1)) + a;
+    },
+    tourner: function (degres) {
+      CX.translate(SIZE / 2, SIZE / 2);
+      CX.rotate((Number(degres) || 0) * Math.PI / 180);
+      CX.translate(-SIZE / 2, -SIZE / 2);
+    }
+  };
+
+  /* ===== catalogue affiché dans la boîte à outils ===== */
+
+  var CATALOGUE = [
+    ['Préparer la toile', [
+      ['effacer()', "Repart d'une toile vide", 'effacer();'],
+      ['fond("bleu")', 'Remplit toute la toile', 'fond("bleu");']
+    ]],
+    ['Réglages du pinceau', [
+      ['couleur("rouge")', "Couleur de l'intérieur des formes", 'couleur("rouge");'],
+      ['contour("noir")', 'Couleur du trait du bord', 'contour("noir");'],
+      ['epaisseur(6)', 'Épaisseur de ce trait', 'epaisseur(6);'],
+      ['sansContour()', 'Supprime le trait du bord', 'sansContour();'],
+      ['sansRemplissage()', "Garde le bord, vide l'intérieur", 'sansRemplissage();']
+    ]],
+    ['Formes', [
+      ['cercle(x, y, rayon)', 'Un cercle centré sur (x, y)', 'cercle(200, 200, 60);'],
+      ['rectangle(x, y, largeur, hauteur)', 'Coin haut-gauche en (x, y)', 'rectangle(100, 100, 120, 80);'],
+      ['triangle(x1, y1, x2, y2, x3, y3)', 'Trois sommets à relier', 'triangle(200, 80, 300, 240, 100, 240);'],
+      ['ligne(x1, y1, x2, y2)', 'Un segment entre deux points', 'ligne(50, 50, 350, 350);']
+    ]],
+    ['Écrire', [
+      ['texte("Salut", x, y, taille)', 'Écrit un mot sur la toile', 'texte("Salut", 140, 210, 32);']
+    ]]
+  ];
+
+  var tools = document.getElementById('tools');
+  CATALOGUE.forEach(function (grp) {
+    var h = document.createElement('p');
+    h.className = 'group'; h.textContent = grp[0];
+    tools.appendChild(h);
+    grp[1].forEach(function (f) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'tool';
+      b.innerHTML = '<span class="sig"></span><span class="what"></span>';
+      b.querySelector('.sig').textContent = f[0];
+      b.querySelector('.what').textContent = f[1];
+      b.addEventListener('click', function () { inserer(f[2]); });
+      tools.appendChild(b);
+    });
+  });
+
+  /* ===== missions ===== */
+
+  var MISSIONS = [
+    ['1 · Ta première variable',
+      "// Avant, on écrivait le nombre directement dans la fonction.\n// Maintenant, on lui donne un nom d'abord.\n\nlet taille = 60;\n\nfond(\"blanc\");\ncouleur(\"violet\");\ncercle(200, 200, taille);\n\n// Change UNIQUEMENT le 60 de la premiere ligne.\n// Regarde le cercle a droite, et l'inspecteur en dessous.\n"],
+
+    ['2 · Une variable, trois cercles',
+      "// Trois cercles empiles. Ils utilisent tous la meme variable x.\n\nlet x = 200;\n\nfond(\"bleu clair\");\ncouleur(\"blanc\");\ncercle(x, 300, 70);\ncercle(x, 210, 50);\ncercle(x, 140, 35);\n\n// Change x = 200 en x = 100. Combien de cercles bougent ?\n// Combien de nombres as-tu du modifier pour ca ?\n"],
+
+    ['3 · Bien nommer',
+      "// Un nom de variable doit dire ce qu'il contient.\n// Ici les noms sont mauvais. A toi de les renommer.\n\nlet a = 200;\nlet b = 120;\n\nfond(\"noir\");\ncouleur(\"jaune\");\ncercle(a, a, b);\n\n// Renomme a en centre et b en rayon.\n// Attention : il faut changer le nom PARTOUT, sinon erreur.\n"],
+
+    ['4 · Calculer avec une variable',
+      "// On peut faire des maths avec une variable : + - * /\n\nlet gauche = 80;\nlet ecart = 120;\n\nfond(\"blanc\");\ncouleur(\"rouge\");\ncercle(gauche, 200, 30);\ncouleur(\"vert\");\ncercle(gauche + ecart, 200, 30);\ncouleur(\"bleu\");\n\n// A toi : un troisieme cercle, encore plus a droite en additionnant une variable.\n\n// Puis change ecart en 60. Les trois cercles se resserrent.\n"],
+
+    ['5 · Le drapeau qui grandit',
+      "// Tout le drapeau depend d'une seule variable.\n\nlet cote = 300;\n\ncouleur(\"rouge\");\nrectangle(50, 50, cote, cote);\n\ncouleur(\"blanc\");\nrectangle(170, 110, 60, 180);\n\n\n// Change cote en 200. Le carre rouge rapetisse...\n// mais pas la croix ! Pourquoi ?\n// A toi de reecrire les deux rectangles blancs\n// en utilisant cote dans leurs calculs.\n"],
+
+    ['6 · Changer une variable en cours de route',
+      "// Une variable peut changer de valeur pendant le programme.\n// La ligne y = y + 60 se lit : \"mets dans y, la valeur de y plus 60\".\n\nlet y = 80;\n\nfond(\"blanc\");\ncouleur(\"violet\");\n\ncercle(200, y, 25);\ny = y + 60;\ncercle(200, y, 25);\ny = y + 60;\ncercle(200, y, 25);\n\n// A toi : ajoute deux cercles de plus, en continuant le motif.\n// Puis change le 60 en 40. Que se passe-t-il ?\n"],
+
+    ['7 · Terrain libre',
+      "// Dessine ce que tu veux, mais avec une regle :\n// aucun nombre ne doit apparaitre deux fois dans ton code.\n// Si tu en as besoin deux fois, c'est une variable.\n\nlet centre = 200;\nlet rayon = 100;\n\nfond(\"blanc\");\ncouleur(\"violet\");\ncercle(centre, centre, rayon);\n"]
+  ];
+
+  var code = document.getElementById('code');
+  var cons = document.getElementById('console');
+  var dot = document.getElementById('dot');
+  var live = document.getElementById('live');
+  var courante = 0;
+
+  var bar = document.getElementById('missions');
+  MISSIONS.forEach(function (m, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'mission'; b.textContent = m[0];
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function () { charger(i); });
+    bar.appendChild(b);
+  });
+
+  function charger(i) {
+    courante = i;
+    code.value = MISSIONS[i][1];
+    var bs = bar.querySelectorAll('.mission');
+    for (var k = 0; k < bs.length; k++) bs[k].setAttribute('aria-pressed', String(k === i));
+    sauver(); lancer();
+    code.focus();
+  }
+
+  function inserer(txt) {
+    var d = code.selectionStart, f = code.selectionEnd, v = code.value;
+    var avant = v.slice(0, d);
+    var saut = (avant === '' || avant.slice(-1) === '\n') ? '' : '\n';
+    code.value = avant + saut + txt + '\n' + v.slice(f);
+    var pos = d + saut.length + txt.length + 1;
+    code.setSelectionRange(pos, pos);
+    code.focus(); sauver(); lancer();
+  }
+
+  /* ===== garde-fou contre les boucles infinies ===== */
+
+  function garde(src) {
+    return src
+      .replace(/\b(for|while)\b([^\n{]*)\{/g, '$1$2{ __tick();')
+      .replace(/\bdo\s*\{/g, 'do { __tick();');
+  }
+
+  /* ===== exécution ===== */
+
+  function lancer() {
+    CX.setTransform(dpr, 0, 0, dpr, 0, 0);
+    CX.clearRect(0, 0, SIZE, SIZE);
+    CX.fillStyle = '#12171A'; CX.strokeStyle = '#12171A'; CX.lineWidth = 2;
+    CX.lineCap = 'round'; CX.lineJoin = 'round';
+    etatDessin.remplir = true; etatDessin.tracer = false;
+    etatDessin.cRemplir = '#12171A'; etatDessin.cTracer = '#12171A';
+    dessins = 0; depart = Date.now();
+
+    var src = code.value;
+    if (!src.replace(/\/\/[^\n]*/g, '').trim()) {
+      inspecteur({});
+      etat('idle', 'La toile attend. Commence par créer une variable : let taille = 60;');
+      return;
+    }
+
+    var noms = Object.keys(API);
+    var args = noms.map(function (n) { return API[n]; });
+    noms.push('__tick'); args.push(__tick);
+
+    var declarees = declarations(src);
+    var collecte = '';
+    if (declarees.length) {
+      collecte = '\nreturn {' + declarees.map(function (n) {
+        return JSON.stringify(n) + ':' + n;
+      }).join(',') + '};';
+    }
+
+    try {
+      var f = new Function(noms.join(','), '"use strict";\n' + garde(src) + collecte);
+      var valeurs = f.apply(null, args);
+      inspecteur(valeurs);
+      etat('ok', dessins + (dessins > 1 ? ' formes dessinées.' : ' forme dessinée.'));
+    } catch (e) {
+      inspecteur(null);
+      etat('ko', message(e), conseil(e));
+    }
+  }
+
+  /* ===== inspecteur de variables ===== */
+
+  var RESERVES = { let:1, var:1, const:1, function:1, return:1, if:1, else:1, for:1, while:1 };
+
+  function declarations(src) {
+    var propre = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    var re = /(?:^|;)\s*(?:let|var|const)\s+([A-Za-z_$][\w$]*)/gm;
+    var vus = {}, sortie = [], m;
+    while ((m = re.exec(propre)) !== null) {
+      var n = m[1];
+      if (!vus[n] && !RESERVES[n] && !API.hasOwnProperty(n)) { vus[n] = 1; sortie.push(n); }
+      if (sortie.length >= 12) break;
+    }
+    return sortie;
+  }
+
+  var boiteVars = document.getElementById('vars');
+
+  function inspecteur(valeurs) {
+    boiteVars.textContent = '';
+    var cles = valeurs ? Object.keys(valeurs) : [];
+    if (!cles.length) {
+      var p = document.createElement('p');
+      p.className = 'vnone';
+      p.textContent = valeurs === null
+        ? 'Corrige l\'erreur pour revoir tes variables.'
+        : 'Aucune variable pour l\'instant. Écris par exemple : let taille = 60;';
+      boiteVars.appendChild(p);
+      return;
+    }
+    cles.forEach(function (n) {
+      var v = valeurs[n];
+      var row = document.createElement('div');
+      row.className = 'vrow';
+      var a = document.createElement('span');
+      a.className = 'vname'; a.textContent = n;
+      var b = document.createElement('span');
+      b.className = 'vval';
+      b.textContent = (typeof v === 'string') ? '"' + v + '"' : String(v);
+      row.appendChild(a); row.appendChild(b);
+      boiteVars.appendChild(row);
+    });
+  }
+
+  function message(e) {
+    var m = e && e.message ? e.message : String(e);
+    if (/is not defined/.test(m)) {
+      var nom = m.split(' ')[0];
+      return 'Le mot « ' + nom + ' » est inconnu.';
+    }
+    if (/has already been declared/.test(m)) {
+      var dej = (m.match(/'([^']+)'/) || [0, 'cette variable'])[1];
+      return 'La variable « ' + dej + ' » est créée deux fois.';
+    }
+    if (/Assignment to constant/.test(m)) return 'Cette variable a été créée avec const : sa valeur ne peut plus changer.';
+    if (/before initialization/.test(m)) return 'Cette variable est utilisée avant d\'avoir été créée.';
+    if (/Unexpected|Invalid or unexpected token/.test(m)) return 'La phrase de code est mal formée.';
+    if (/missing \) after|Unexpected end of input/.test(m)) return 'Il manque une parenthèse ou une accolade fermante.';
+    return m;
+  }
+
+  function conseil(e) {
+    var m = e && e.message ? e.message : '';
+    if (/is not defined/.test(m)) return 'Vérifie l\'orthographe, ou mets des guillemets si c\'est une couleur : couleur("rouge") et non couleur(rouge).';
+    if (/is not a function/.test(m)) return 'Cette fonction n\'existe pas dans la boîte à outils. Regarde la liste à gauche.';
+    if (/créée deux fois|already been declared/.test(m)) return 'On écrit let une seule fois par variable. Pour la changer ensuite : y = 100; sans let.';
+    if (/avant d\'avoir été créée|before initialization/.test(m)) return 'Déplace la ligne let tout en haut de ton code.';
+    if (/Unexpected end of input/.test(m)) return 'Compte tes accolades { } : il en faut autant d\'ouvertes que de fermées.';
+    if (/boucle qui ne s\'arrête/.test(m)) return 'Dans un for, vérifie que le compteur augmente bien à chaque tour.';
+    return 'Relis la dernière ligne que tu as ajoutée.';
+  }
+
+  function etat(type, txt, extra) {
+    cons.className = 'console ' + (type === 'ok' ? 'ok' : type === 'ko' ? 'ko' : 'idle');
+    dot.className = 'dot' + (type === 'ok' ? ' ok' : type === 'ko' ? ' ko' : '');
+    cons.textContent = txt;
+    if (extra) {
+      var s = document.createElement('span');
+      s.className = 'fix'; s.textContent = extra;
+      cons.appendChild(s);
+    }
+  }
+
+  /* ===== repère des coordonnées ===== */
+
+  var RP = document.getElementById('repere');
+  var RX = RP.getContext('2d');
+  RP.width = SIZE * dpr; RP.height = SIZE * dpr;
+  RX.scale(dpr, dpr);
+
+  function repere(actif) {
+    RX.clearRect(0, 0, SIZE, SIZE);
+    if (!actif) return;
+    RX.save();
+    RX.strokeStyle = 'rgba(18,23,26,.14)';
+    RX.lineWidth = 1;
+    for (var v = 50; v < SIZE; v += 50) {
+      RX.beginPath(); RX.moveTo(v + .5, 0); RX.lineTo(v + .5, SIZE); RX.stroke();
+      RX.beginPath(); RX.moveTo(0, v + .5); RX.lineTo(SIZE, v + .5); RX.stroke();
+    }
+    RX.font = '400 10px "IBM Plex Mono", monospace';
+    RX.fillStyle = 'rgba(18,23,26,.55)';
+    for (var g = 50; g < SIZE; g += 50) {
+      RX.textAlign = 'center'; RX.textBaseline = 'top';
+      RX.fillText(String(g), g, 3);
+      RX.textAlign = 'left'; RX.textBaseline = 'middle';
+      RX.fillText(String(g), 3, g);
+    }
+    RX.textAlign = 'left'; RX.textBaseline = 'top';
+    RX.fillText('0,0', 3, 3);
+    RX.restore();
+  }
+
+  var grille = document.getElementById('grille');
+  grille.addEventListener('change', function () { repere(grille.checked); });
+  repere(true);
+
+  /* ===== sauvegarde locale ===== */
+
+  function sauver() {
+    try { localStorage.setItem('atelier-variables', code.value); } catch (e) {}
+  }
+  function restaurer() {
+    try { return localStorage.getItem('atelier-variables'); } catch (e) { return null; }
+  }
+
+  /* ===== branchements ===== */
+
+  var minuteur;
+  code.addEventListener('input', function () {
+    sauver();
+    if (!live.checked) return;
+    clearTimeout(minuteur);
+    minuteur = setTimeout(lancer, 400);
+  });
+
+  code.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      var d = code.selectionStart;
+      code.value = code.value.slice(0, d) + '  ' + code.value.slice(code.selectionEnd);
+      code.setSelectionRange(d + 2, d + 2);
+    }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); lancer(); }
+  });
+
+  document.getElementById('run').addEventListener('click', lancer);
+  document.getElementById('clear').addEventListener('click', function () {
+    code.value = ''; sauver(); lancer(); code.focus();
+  });
+  document.getElementById('restore').addEventListener('click', function () { charger(courante); });
+  live.addEventListener('change', function () { if (live.checked) lancer(); });
+
+  var garde_ = restaurer();
+  if (garde_ && garde_.trim()) {
+    code.value = garde_;
+    bar.querySelectorAll('.mission')[0].setAttribute('aria-pressed', 'false');
+    lancer();
+  } else {
+    charger(0);
+  }
+})();
+</script>
+</body>
+</html>

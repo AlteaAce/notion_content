@@ -194,6 +194,13 @@ body{
     if (Date.now() - depart > 1500) throw new Error("Le code tourne depuis trop longtemps — il y a sans doute une boucle qui ne s'arrête jamais.");
   }
 
+  var etatDessin = { remplir: true, tracer: false, cRemplir: '#12171A', cTracer: '#12171A' };
+
+  function peindre() {
+    if (etatDessin.remplir) { CX.fillStyle = etatDessin.cRemplir; CX.fill(); }
+    if (etatDessin.tracer)  { CX.strokeStyle = etatDessin.cTracer;  CX.stroke(); }
+  }
+
   let API = {
     effacer: function () {
       CX.clearRect(0, 0, SIZE, SIZE);
@@ -201,30 +208,37 @@ body{
     fond: function (c) {
       budget(); CX.save(); CX.fillStyle = teinte(c); CX.fillRect(0, 0, SIZE, SIZE); CX.restore();
     },
-    couleur: function (c) { CX.fillStyle = CX.strokeStyle = teinte(c); },
-    epaisseur: function (n) { CX.lineWidth = Math.max(0.5, Number(n) || 1); },
+    couleur: function (c) { etatDessin.cRemplir = teinte(c); etatDessin.remplir = true; },
+    contour: function (c) { etatDessin.cTracer = teinte(c); etatDessin.tracer = true; },
+    epaisseur: function (n) {
+      CX.lineWidth = Math.max(0.5, Number(n) || 1);
+      etatDessin.tracer = true;
+    },
+    sansContour: function () { etatDessin.tracer = false; },
+    sansRemplissage: function () { etatDessin.remplir = false; },
     cercle: function (x, y, r) {
-      budget(); CX.beginPath(); CX.arc(+x, +y, Math.abs(+r), 0, Math.PI * 2); CX.fill();
+      budget(); CX.beginPath(); CX.arc(+x, +y, Math.abs(+r), 0, Math.PI * 2); peindre();
     },
-    contourCercle: function (x, y, r) {
-      budget(); CX.beginPath(); CX.arc(+x, +y, Math.abs(+r), 0, Math.PI * 2); CX.stroke();
+    rectangle: function (x, y, l, h) {
+      budget(); CX.beginPath(); CX.rect(+x, +y, +l, +h); peindre();
     },
-    rectangle: function (x, y, l, h) { budget(); CX.fillRect(+x, +y, +l, +h); },
-    contourRectangle: function (x, y, l, h) { budget(); CX.strokeRect(+x, +y, +l, +h); },
     triangle: function (x1, y1, x2, y2, x3, y3) {
       budget(); CX.beginPath(); CX.moveTo(+x1, +y1); CX.lineTo(+x2, +y2); CX.lineTo(+x3, +y3);
-      CX.closePath(); CX.fill();
+      CX.closePath(); peindre();
     },
     ligne: function (x1, y1, x2, y2) {
-      budget(); CX.beginPath(); CX.moveTo(+x1, +y1); CX.lineTo(+x2, +y2); CX.stroke();
+      budget(); CX.beginPath(); CX.moveTo(+x1, +y1); CX.lineTo(+x2, +y2);
+      CX.strokeStyle = etatDessin.tracer ? etatDessin.cTracer : etatDessin.cRemplir;
+      CX.stroke();
     },
     texte: function (mot, x, y, taille) {
       budget(); CX.save();
       CX.font = '500 ' + (Number(taille) || 20) + 'px "IBM Plex Mono", monospace';
+      CX.fillStyle = etatDessin.remplir ? etatDessin.cRemplir : etatDessin.cTracer;
       CX.fillText(String(mot), +x, +y); CX.restore();
     },
     hasard: function (min, max) {
-      let a = Number(min) || 0, b = (max === undefined ? 400 : Number(max));
+      var a = Number(min) || 0, b = (max === undefined ? 400 : Number(max));
       return Math.floor(Math.random() * (b - a + 1)) + a;
     },
     tourner: function (degres) {
@@ -239,18 +253,20 @@ body{
   let CATALOGUE = [
     ['Préparer la toile', [
       ['effacer()', "Repart d'une toile vide", 'effacer();'],
-      ['fond("bleu")', 'Remplit toute la toile', 'fond("bleu");'],
-      ['couleur("rouge")', 'Change la couleur des formes suivantes', 'couleur("rouge");'],
-      ['epaisseur(4)', "Épaisseur des traits et des contours", 'epaisseur(4);']
+      ['fond("bleu")', 'Remplit toute la toile', 'fond("bleu");']
     ]],
-    ['Formes pleines', [
-      ['cercle(x, y, rayon)', 'Un disque centré sur (x, y)', 'cercle(200, 200, 60);'],
+    ['Réglages du pinceau', [
+      ['couleur("rouge")', "Couleur de l'intérieur des formes", 'couleur("rouge");'],
+      ['contour("noir")', 'Couleur du trait du bord', 'contour("noir");'],
+      ['epaisseur(6)', 'Épaisseur de ce trait', 'epaisseur(6);'],
+      ['sansContour()', 'Supprime le trait du bord', 'sansContour();'],
+      ['sansRemplissage()', "Garde le bord, vide l'intérieur", 'sansRemplissage();']
+    ]],
+    ['Formes', [
+      ['cercle(x, y, rayon)', 'Un cercle centré sur (x, y)', 'cercle(200, 200, 60);'],
       ['rectangle(x, y, largeur, hauteur)', 'Coin haut-gauche en (x, y)', 'rectangle(100, 100, 120, 80);'],
-      ['triangle(x1, y1, x2, y2, x3, y3)', 'Trois sommets à relier', 'triangle(200, 80, 300, 240, 100, 240);']
-    ]],
-    ['Traits et contours', [
-      ['ligne(x1, y1, x2, y2)', 'Un segment entre deux points', 'ligne(50, 50, 350, 350);'],
-      ['contourCercle(x, y, rayon)', 'Un cercle vide', 'contourCercle(200, 200, 90);']
+      ['triangle(x1, y1, x2, y2, x3, y3)', 'Trois sommets à relier', 'triangle(200, 80, 300, 240, 100, 240);'],
+      ['ligne(x1, y1, x2, y2)', 'Un segment entre deux points', 'ligne(50, 50, 350, 350);']
     ]],
     ['Écrire', [
       ['texte("Salut", x, y, taille)', 'Écrit un mot sur la toile', 'texte("Salut", 140, 210, 32);']
@@ -345,6 +361,8 @@ body{
     CX.clearRect(0, 0, SIZE, SIZE);
     CX.fillStyle = '#12171A'; CX.strokeStyle = '#12171A'; CX.lineWidth = 2;
     CX.lineCap = 'round'; CX.lineJoin = 'round';
+    etatDessin.remplir = true; etatDessin.tracer = false;
+    etatDessin.cRemplir = '#12171A'; etatDessin.cTracer = '#12171A';
     dessins = 0; depart = Date.now();
 
     let src = code.value;

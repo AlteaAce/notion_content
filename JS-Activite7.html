@@ -180,15 +180,15 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
 
   /* ===== bibliothèque mise à disposition des élèves ===== */
 
-  var CV = document.getElementById('toile');
-  var CX = CV.getContext('2d');
-  var SIZE = 400;
+  let CV = document.getElementById('toile');
+  let CX = CV.getContext('2d');
+  let SIZE = 400;
 
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
   CV.width = SIZE * dpr; CV.height = SIZE * dpr;
   CX.scale(dpr, dpr);
 
-  var PALETTE = {
+  let PALETTE = {
     rouge:'#D93B3B', bleu:'#2A6FD1', jaune:'#EFC030', vert:'#3E9145',
     orange:'#E07B25', violet:'#7A54B5', rose:'#DE6C9C', brun:'#8A5A32',
     noir:'#12171A', blanc:'#FFFFFF', gris:'#98A3A9', cyan:'#2AA8B5',
@@ -197,11 +197,11 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
 
   function teinte(c) {
     if (typeof c !== 'string') return '#12171A';
-    var k = c.trim().toLowerCase();
+    let k = c.trim().toLowerCase();
     return PALETTE[k] || c;
   }
 
-  var LIMITE = 6000, dessins = 0, depart = 0;
+  let LIMITE = 6000, dessins = 0, depart = 0;
 
   function budget() {
     if (++dessins > LIMITE) throw new Error("Trop de formes d'un coup (plus de " + LIMITE + "). Réduis le nombre de tours de boucle.");
@@ -211,14 +211,14 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
     if (Date.now() - depart > 1500) throw new Error("Le code tourne depuis trop longtemps — il y a sans doute une boucle qui ne s'arrête jamais.");
   }
 
-  var etatDessin = { remplir: true, tracer: false, cRemplir: '#12171A', cTracer: '#12171A' };
+  let etatDessin = { remplir: true, tracer: false, cRemplir: '#12171A', cTracer: '#12171A' };
 
   function peindre() {
     if (etatDessin.remplir) { CX.fillStyle = etatDessin.cRemplir; CX.fill(); }
     if (etatDessin.tracer)  { CX.strokeStyle = etatDessin.cTracer;  CX.stroke(); }
   }
 
-  var API = {
+  let API = {
     effacer: function () {
       CX.clearRect(0, 0, SIZE, SIZE);
     },
@@ -255,7 +255,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
       CX.fillText(String(mot), +x, +y); CX.restore();
     },
     hasard: function (min, max) {
-      var a = Number(min) || 0, b = (max === undefined ? 400 : Number(max));
+      let a = Number(min) || 0, b = (max === undefined ? 400 : Number(max));
       return Math.floor(Math.random() * (b - a + 1)) + a;
     },
     tourner: function (degres) {
@@ -267,7 +267,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
 
   /* ===== catalogue affiché dans la boîte à outils ===== */
 
-  var CATALOGUE = [
+  let CATALOGUE = [
     ['Préparer la toile', [
       ['effacer()', "Repart d'une toile vide", 'effacer();'],
       ['fond("bleu")', 'Remplit toute la toile', 'fond("bleu");']
@@ -290,13 +290,13 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
     ]]
   ];
 
-  var tools = document.getElementById('tools');
+  let tools = document.getElementById('tools');
   CATALOGUE.forEach(function (grp) {
     var h = document.createElement('p');
     h.className = 'group'; h.textContent = grp[0];
     tools.appendChild(h);
     grp[1].forEach(function (f) {
-      var b = document.createElement('button');
+      let b = document.createElement('button');
       b.type = 'button'; b.className = 'tool';
       b.innerHTML = '<span class="sig"></span><span class="what"></span>';
       b.querySelector('.sig').textContent = f[0];
@@ -308,7 +308,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
 
   /* ===== missions ===== */
 
-  var MISSIONS = [
+  let MISSIONS = [
     ['1 · Ta première variable',
       "// Avant, on écrivait le nombre directement dans la fonction.\n// Maintenant, on lui donne un nom d'abord.\n\nlet taille = 60;\n\nfond(\"blanc\");\ncouleur(\"violet\");\ncercle(200, 200, taille);\n\n// Change UNIQUEMENT le 60 de la premiere ligne.\n// Regarde le cercle a droite, et l'inspecteur en dessous.\n"],
 
@@ -331,15 +331,15 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
       "// Dessine ce que tu veux, mais avec une regle :\n// aucun nombre ne doit apparaitre deux fois dans ton code.\n// Si tu en as besoin deux fois, c'est une variable.\n\nlet centre = 200;\nlet rayon = 100;\n\nfond(\"blanc\");\ncouleur(\"violet\");\ncercle(centre, centre, rayon);\n"]
   ];
 
-  var code = document.getElementById('code');
-  var cons = document.getElementById('console');
-  var dot = document.getElementById('dot');
-  var live = document.getElementById('live');
-  var courante = 0;
+  let code = document.getElementById('code');
+  let cons = document.getElementById('console');
+  let dot = document.getElementById('dot');
+  let live = document.getElementById('live');
+  let courante = 0;
 
-  var bar = document.getElementById('missions');
+  let bar = document.getElementById('missions');
   MISSIONS.forEach(function (m, i) {
-    var b = document.createElement('button');
+    let b = document.createElement('button');
     b.type = 'button'; b.className = 'mission'; b.textContent = m[0];
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', function () { charger(i); });
@@ -349,18 +349,18 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
   function charger(i) {
     courante = i;
     code.value = MISSIONS[i][1];
-    var bs = bar.querySelectorAll('.mission');
-    for (var k = 0; k < bs.length; k++) bs[k].setAttribute('aria-pressed', String(k === i));
+    let bs = bar.querySelectorAll('.mission');
+    for (let k = 0; k < bs.length; k++) bs[k].setAttribute('aria-pressed', String(k === i));
     sauver(); lancer();
     code.focus();
   }
 
   function inserer(txt) {
-    var d = code.selectionStart, f = code.selectionEnd, v = code.value;
-    var avant = v.slice(0, d);
-    var saut = (avant === '' || avant.slice(-1) === '\n') ? '' : '\n';
+    let d = code.selectionStart, f = code.selectionEnd, v = code.value;
+    let avant = v.slice(0, d);
+    let saut = (avant === '' || avant.slice(-1) === '\n') ? '' : '\n';
     code.value = avant + saut + txt + '\n' + v.slice(f);
-    var pos = d + saut.length + txt.length + 1;
+    let pos = d + saut.length + txt.length + 1;
     code.setSelectionRange(pos, pos);
     code.focus(); sauver(); lancer();
   }
@@ -384,19 +384,19 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
     etatDessin.cRemplir = '#12171A'; etatDessin.cTracer = '#12171A';
     dessins = 0; depart = Date.now();
 
-    var src = code.value;
+    let src = code.value;
     if (!src.replace(/\/\/[^\n]*/g, '').trim()) {
       inspecteur({});
       etat('idle', 'La toile attend. Commence par créer une variable : let taille = 60;');
       return;
     }
 
-    var noms = Object.keys(API);
-    var args = noms.map(function (n) { return API[n]; });
+    let noms = Object.keys(API);
+    let args = noms.map(function (n) { return API[n]; });
     noms.push('__tick'); args.push(__tick);
 
-    var declarees = declarations(src);
-    var collecte = '';
+    let declarees = declarations(src);
+    let collecte = '';
     if (declarees.length) {
       collecte = '\nreturn {' + declarees.map(function (n) {
         return JSON.stringify(n) + ':' + n;
@@ -404,8 +404,8 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
     }
 
     try {
-      var f = new Function(noms.join(','), '"use strict";\n' + garde(src) + collecte);
-      var valeurs = f.apply(null, args);
+      let f = new Function(noms.join(','), '"use strict";\n' + garde(src) + collecte);
+      let valeurs = f.apply(null, args);
       inspecteur(valeurs);
       etat('ok', dessins + (dessins > 1 ? ' formes dessinées.' : ' forme dessinée.'));
     } catch (e) {
@@ -416,27 +416,27 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
 
   /* ===== inspecteur de variables ===== */
 
-  var RESERVES = { let:1, var:1, const:1, function:1, return:1, if:1, else:1, for:1, while:1 };
+  let RESERVES = { let:1, var:1, const:1, function:1, return:1, if:1, else:1, for:1, while:1 };
 
   function declarations(src) {
-    var propre = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-    var re = /(?:^|;)\s*(?:let|var|const)\s+([A-Za-z_$][\w$]*)/gm;
-    var vus = {}, sortie = [], m;
+    let propre = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    let re = /(?:^|;)\s*(?:let|var|const)\s+([A-Za-z_$][\w$]*)/gm;
+    let vus = {}, sortie = [], m;
     while ((m = re.exec(propre)) !== null) {
-      var n = m[1];
+      let n = m[1];
       if (!vus[n] && !RESERVES[n] && !API.hasOwnProperty(n)) { vus[n] = 1; sortie.push(n); }
       if (sortie.length >= 12) break;
     }
     return sortie;
   }
 
-  var boiteVars = document.getElementById('vars');
+  let boiteVars = document.getElementById('vars');
 
   function inspecteur(valeurs) {
     boiteVars.textContent = '';
-    var cles = valeurs ? Object.keys(valeurs) : [];
+    let cles = valeurs ? Object.keys(valeurs) : [];
     if (!cles.length) {
-      var p = document.createElement('p');
+      let p = document.createElement('p');
       p.className = 'vnone';
       p.textContent = valeurs === null
         ? 'Corrige l\'erreur pour revoir tes variables.'
@@ -445,12 +445,12 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
       return;
     }
     cles.forEach(function (n) {
-      var v = valeurs[n];
-      var row = document.createElement('div');
+      let v = valeurs[n];
+      let row = document.createElement('div');
       row.className = 'vrow';
-      var a = document.createElement('span');
+      let a = document.createElement('span');
       a.className = 'vname'; a.textContent = n;
-      var b = document.createElement('span');
+      let b = document.createElement('span');
       b.className = 'vval';
       b.textContent = (typeof v === 'string') ? '"' + v + '"' : String(v);
       row.appendChild(a); row.appendChild(b);
@@ -459,13 +459,13 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
   }
 
   function message(e) {
-    var m = e && e.message ? e.message : String(e);
+    let m = e && e.message ? e.message : String(e);
     if (/is not defined/.test(m)) {
       var nom = m.split(' ')[0];
       return 'Le mot « ' + nom + ' » est inconnu.';
     }
     if (/has already been declared/.test(m)) {
-      var dej = (m.match(/'([^']+)'/) || [0, 'cette variable'])[1];
+      let dej = (m.match(/'([^']+)'/) || [0, 'cette variable'])[1];
       return 'La variable « ' + dej + ' » est créée deux fois.';
     }
     if (/Assignment to constant/.test(m)) return 'Cette variable a été créée avec const : sa valeur ne peut plus changer.';
@@ -476,7 +476,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
   }
 
   function conseil(e) {
-    var m = e && e.message ? e.message : '';
+    let m = e && e.message ? e.message : '';
     if (/is not defined/.test(m)) return 'Vérifie l\'orthographe, ou mets des guillemets si c\'est une couleur : couleur("rouge") et non couleur(rouge).';
     if (/is not a function/.test(m)) return 'Cette fonction n\'existe pas dans la boîte à outils. Regarde la liste à gauche.';
     if (/créée deux fois|already been declared/.test(m)) return 'On écrit let une seule fois par variable. Pour la changer ensuite : y = 100; sans let.';
@@ -491,7 +491,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
     dot.className = 'dot' + (type === 'ok' ? ' ok' : type === 'ko' ? ' ko' : '');
     cons.textContent = txt;
     if (extra) {
-      var s = document.createElement('span');
+      let s = document.createElement('span');
       s.className = 'fix'; s.textContent = extra;
       cons.appendChild(s);
     }
@@ -499,8 +499,8 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
 
   /* ===== repère des coordonnées ===== */
 
-  var RP = document.getElementById('repere');
-  var RX = RP.getContext('2d');
+  let RP = document.getElementById('repere');
+  let RX = RP.getContext('2d');
   RP.width = SIZE * dpr; RP.height = SIZE * dpr;
   RX.scale(dpr, dpr);
 
@@ -510,13 +510,13 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
     RX.save();
     RX.strokeStyle = 'rgba(18,23,26,.14)';
     RX.lineWidth = 1;
-    for (var v = 50; v < SIZE; v += 50) {
+    for (let v = 50; v < SIZE; v += 50) {
       RX.beginPath(); RX.moveTo(v + .5, 0); RX.lineTo(v + .5, SIZE); RX.stroke();
       RX.beginPath(); RX.moveTo(0, v + .5); RX.lineTo(SIZE, v + .5); RX.stroke();
     }
     RX.font = '400 10px "IBM Plex Mono", monospace';
     RX.fillStyle = 'rgba(18,23,26,.55)';
-    for (var g = 50; g < SIZE; g += 50) {
+    for (let g = 50; g < SIZE; g += 50) {
       RX.textAlign = 'center'; RX.textBaseline = 'top';
       RX.fillText(String(g), g, 3);
       RX.textAlign = 'left'; RX.textBaseline = 'middle';
@@ -527,7 +527,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
     RX.restore();
   }
 
-  var grille = document.getElementById('grille');
+  let grille = document.getElementById('grille');
   grille.addEventListener('change', function () { repere(grille.checked); });
   repere(true);
 
@@ -542,7 +542,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
 
   /* ===== branchements ===== */
 
-  var minuteur;
+  let minuteur;
   code.addEventListener('input', function () {
     sauver();
     if (!live.checked) return;
@@ -553,7 +553,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
   code.addEventListener('keydown', function (e) {
     if (e.key === 'Tab') {
       e.preventDefault();
-      var d = code.selectionStart;
+      let d = code.selectionStart;
       code.value = code.value.slice(0, d) + '  ' + code.value.slice(code.selectionEnd);
       code.setSelectionRange(d + 2, d + 2);
     }
@@ -567,7 +567,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,44px);lin
   document.getElementById('restore').addEventListener('click', function () { charger(courante); });
   live.addEventListener('change', function () { if (live.checked) lancer(); });
 
-  var garde_ = restaurer();
+  let garde_ = restaurer();
   if (garde_ && garde_.trim()) {
     code.value = garde_;
     bar.querySelectorAll('.mission')[0].setAttribute('aria-pressed', 'false');

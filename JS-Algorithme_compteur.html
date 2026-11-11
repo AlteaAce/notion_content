@@ -1,0 +1,321 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Algorithme du compteur</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: schéma d'algorithme au centre (départ, lecture, test, puis deux branches OUI / NON), réserve de cartes mélangées dessous. */
+:root{
+  --bg:#F5F6F6; --surface:#FFFFFF; --ink:#12171A; --muted:#4A545A; --line:#12171A;
+  --soft:#E6E9EB; --accent:#0C6A53; --accent-ink:#FFFFFF;
+  --ok:#1E7B3C; --ok-bg:#DDF1E3; --bad:#B3261E; --bad-bg:#FBE4E1; --sel:#0C6A53; --lit:#FFE9A8; --lit-ink:#12171A;
+  --display:'Bricolage Grotesque','Helvetica Neue',Arial,sans-serif;
+  --body:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171A; --surface:#1B2226; --ink:#E9EEF0; --muted:#9AA6AC; --line:#8D9AA1;
+  --soft:#2A343A; --accent:#4CC3A2; --accent-ink:#0B1A15;
+  --ok:#6FD38C; --ok-bg:#1B3A27; --bad:#FF8A80; --bad-bg:#43211E; --sel:#4CC3A2; --lit:#5C4A12; --lit-ink:#FFF1C7; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171A; --surface:#1B2226; --ink:#E9EEF0; --muted:#9AA6AC; --line:#8D9AA1;
+  --soft:#2A343A; --accent:#4CC3A2; --accent-ink:#0B1A15;
+  --ok:#6FD38C; --ok-bg:#1B3A27; --bad:#FF8A80; --bad-bg:#43211E; --sel:#4CC3A2; --lit:#5C4A12; --lit-ink:#FFF1C7; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:900px;margin:0 auto}
+.tag{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 10px;text-wrap:balance}
+.intro{max-width:68ch;margin:0 0 18px;color:var(--muted)}
+.intro strong{color:var(--ink)}
+.bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:14px}
+button{font:inherit;font-weight:600;cursor:pointer;border-radius:6px;padding:10px 18px;border:2px solid var(--ink);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:focus-visible,.card:focus-visible,.slot:focus-visible,.pool:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+.levels{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.lvl{padding:8px 14px;font-size:14px}
+.lvl.on{background:var(--ink);color:var(--bg)}
+.empty-cell{height:92px;border:2px dotted var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;color:var(--muted);padding:0 10px}
+.arrow.merge{display:grid;grid-template-columns:1fr 1fr;grid-column:1/-1;max-width:430px;justify-self:center;width:100%}
+.score{font-family:var(--mono);font-size:14px;font-weight:600;margin-left:auto}
+.msg{min-height:24px;font-weight:500;margin:0 0 12px}
+.msg.good{color:var(--ok)} .msg.warn{color:var(--bad)}
+h2{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin:0 0 8px;color:var(--muted)}
+.cols{display:flex;flex-direction:column;gap:26px}
+.diagram{display:grid;grid-template-columns:repeat(2,minmax(0,210px));justify-content:center;gap:4px 18px;padding:12px 0}
+.cell{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:0}
+.cell.center{grid-column:1/-1;width:210px;max-width:100%;justify-self:center}
+.arrow{text-align:center;color:var(--muted);font-size:18px;line-height:1;height:18px;font-family:var(--mono)}
+.arrow.split{display:grid;grid-template-columns:1fr 1fr;grid-column:1/-1;max-width:430px;justify-self:center;width:100%}
+.slot{height:92px;border:2px dashed var(--line);border-radius:10px;display:flex}
+.slot.over{background:var(--soft);border-style:solid}
+.slot.locked{border-style:solid;border-color:var(--ok)}
+.slot.lit{background:var(--lit);border-style:solid;border-color:var(--ink)}
+.slot .lbl{margin:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:center;padding:0 8px}
+.pool{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;min-height:110px;padding:10px;border:2px dashed var(--line);border-radius:10px}
+.pool.over{background:var(--soft);border-style:solid}
+.pool .empty{grid-column:1/-1;margin:auto;color:var(--muted);font-size:14px;text-align:center;padding:16px}
+.card{position:relative;flex:1;min-width:0;height:92px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;display:block;border-radius:10px}
+.pool .card{flex:none;width:100%}
+.card svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.shape{fill:var(--surface);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
+.txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--mono);font-size:12px;font-weight:500;line-height:1.25;padding:0 14%;overflow-wrap:anywhere;color:var(--ink)}
+.card.test .txt{padding:0 24%;font-size:11.5px}
+.card.label .txt{font-family:var(--display);font-weight:800;font-size:28px;padding:0}
+.card .cap{position:absolute;left:0;right:0;bottom:-1px;text-align:center;font:400 10px var(--body);color:var(--muted);display:none}
+.card.sel .shape{stroke:var(--sel);stroke-width:4}
+.card.dragging{opacity:.35}
+.card.wrong .shape{fill:var(--bad-bg);stroke:var(--bad)}
+.card.wrong{animation:shake .35s}
+.card.locked{cursor:default;touch-action:auto}
+.card.locked .shape{fill:var(--ok-bg);stroke:var(--ok)}
+.card.locked::after{content:"✓";position:absolute;top:0;right:4px;color:var(--ok);font-weight:700;font-size:14px}
+.ghost{position:fixed;z-index:50;pointer-events:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.3));opacity:.95}
+.testzone{margin-top:28px;display:none}
+.testzone.show{display:block}
+.testzone h3{font-family:var(--display);font-size:22px;margin:0 0 6px}
+.testzone p{margin:0 0 12px;color:var(--muted);max-width:68ch}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.chip{font-family:var(--mono);font-weight:600;font-size:14px;border-radius:4px;padding:8px 14px;border:3px double var(--ink);background:var(--surface);color:var(--ink)}
+.chip.on{background:var(--lit);color:var(--lit-ink)}
+.out{font-family:var(--mono);font-size:15px;min-height:50px;padding:10px 14px;border:2px solid var(--line);border-radius:8px;background:var(--surface)}
+.out b{color:var(--accent)}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (max-width:600px){.diagram{gap:4px 10px}.slot,.card{height:84px}.txt{font-size:11px}.card.test .txt{font-size:10.5px}.pool{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.poolcol{order:-1}}
+@media (prefers-reduced-motion:reduce){.card.wrong{animation:none}}
+</style>
+
+<div class="wrap">
+  <div class="tag" id="tag">Révision n°4 · Cartes</div>
+  <h1 id="h1">Formez l'algorithme du compteur</h1>
+  <div class="levels" role="group" aria-label="Niveau"><button type="button" class="lvl on" data-lvl="0">Niveau 1 · Le compteur</button><button type="button" class="lvl" data-lvl="1">Niveau 2 · La remise</button></div>
+  <p class="intro" id="intro">Glissez les cartes de la réserve dans le schéma, dans l'ordre où l'ordinateur les exécute. Le losange est un <strong>test</strong> : il a deux sorties, <strong>OUI</strong> à gauche et <strong>NON</strong> à droite. Sur téléphone ou au clavier, touchez une carte puis son emplacement. Cliquez sur <strong>Valider</strong> : les cartes bien placées deviennent vertes et se verrouillent. Ensuite, testez l'algorithme avec des données.</p>
+  <div class="bar">
+    <button id="validate" class="primary" type="button">Valider</button>
+    <button id="reset" type="button">Mélanger et recommencer</button>
+    <span class="score" id="score" aria-live="polite">0 / 10 verrouillées</span>
+  </div>
+  <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  <div class="cols">
+    <section>
+      <h2>Le schéma</h2>
+      <div class="diagram" id="diagram"></div>
+    </section>
+    <section class="poolcol">
+      <h2>Réserve de cartes</h2>
+      <div class="pool" id="pool" data-pool="1" tabindex="0" aria-label="Réserve de cartes"></div>
+    </section>
+  </div>
+  <section class="testzone" id="test">
+    <h3>Testez votre algorithme</h3>
+    <p>Choisissez une donnée de départ : le chemin parcouru s'allume dans le schéma, étape par étape.</p>
+    <div class="chips" id="chips"></div>
+    <div class="out" id="out" aria-live="polite">Choisissez une donnée.</div>
+  </section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+const LEVELS=[
+{
+ tag:'Révision n°4 · Cartes',h1:'Formez l\'algorithme du compteur',
+ intro:'Glissez les cartes de la réserve dans le schéma, dans l\'ordre où l\'ordinateur les exécute. Le losange est un <strong>test</strong> : il a deux sorties, <strong>OUI</strong> à gauche et <strong>NON</strong> à droite. Sur téléphone ou au clavier, touchez une carte puis son emplacement. Cliquez sur <strong>Valider</strong> : les cartes bien placées deviennent vertes et se verrouillent. Ensuite, testez l\'algorithme avec des données.',
+ C:[
+  {kind:'oval',key:'debut',t:'Début'},{kind:'para',key:'lire',t:'Lire compteur'},{kind:'test',key:'test',t:'compteur < 10 ?'},
+  {kind:'label',key:'oui',t:'OUI'},{kind:'rect',key:'action',t:'compteur = compteur + 1'},{kind:'para',key:'afficher',t:'Afficher compteur'},
+  {kind:'oval',key:'fin',t:'Fin'},{kind:'label',key:'non',t:'NON'},{kind:'para',key:'max',t:'Afficher "Maximum atteint"'},{kind:'oval',key:'fin',t:'Fin'}],
+ S:['debut','lire','test','oui','non','action','max','afficher','fin','fin'],
+ START:[7,4,9,2,5,0,8,3,6,1],
+ build(cell,ar,g){
+  g.append(cell(0,'center'),ar('↓',1),cell(1,'center'),ar('↓',1),cell(2,'center'),split(ar));
+  g.append(cell(3),cell(4),ar('↓'),ar('↓'),cell(5),cell(6),ar('↓'),ar('↓'),cell(7),cell(8),ar('↓'),document.createElement('div'),cell(9),document.createElement('div'));
+ },
+ tests:[
+  {v:9,path:[0,1,2,3,5,7,9],yes:true,out:10,act:10},{v:10,path:[0,1,2,4,6,8],yes:false,out:'Maximum atteint'},
+  {v:0,path:[0,1,2,3,5,7,9],yes:true,out:1,act:1},{v:4,path:[0,1,2,3,5,7,9],yes:true,out:5,act:5}],
+ chip:v=>'compteur = '+v,
+ line(key,t){
+  if(key==='lire')return 'Lecture : compteur vaut '+t.v+'.';
+  if(key==='test')return 'Test : '+t.v+' < 10 ? Réponse : '+(t.yes?'OUI':'NON')+'.';
+  if(key==='action')return 'Action : compteur vaut maintenant '+t.act+'.';
+  if(key==='afficher'||key==='max')return 'Affichage : '+t.out+'.';
+  if(key==='fin')return 'Fin.';return null;},
+ win:'Bravo, l\'algorithme est complet. Toutes les cartes sont verrouillées.'
+},
+{
+ tag:'Révision n°5 · Cartes',h1:'Formez l\'algorithme de la remise',
+ intro:'Un magasin applique <strong>10 % de remise</strong> sur les prix supérieurs à 100. Construisez l\'algorithme dans le schéma. Attention : <strong>une carte de la réserve est une intruse</strong>, et une des deux sorties du test ne demande aucune action. Cliquez sur <strong>Valider</strong> : les cartes bien placées deviennent vertes et se verrouillent. Ensuite, testez avec des prix.',
+ C:[
+  {kind:'oval',key:'debut',t:'Début'},{kind:'para',key:'lire',t:'Lire prix'},{kind:'test',key:'test',t:'prix > 100 ?'},
+  {kind:'label',key:'oui',t:'OUI'},{kind:'label',key:'non',t:'NON'},{kind:'rect',key:'action',t:'prix = prix × 0.9'},
+  {kind:'para',key:'afficher',t:'Afficher prix'},{kind:'oval',key:'fin',t:'Fin'},{kind:'rect',key:'intruse',t:'prix = prix × 0.1'}],
+ S:['debut','lire','test','oui','non','action','afficher','fin'],
+ START:[8,5,7,3,1,6,4,0,2],
+ build(cell,ar,g){
+  g.append(cell(0,'center'),ar('↓',1),cell(1,'center'),ar('↓',1),cell(2,'center'),split(ar));
+  g.append(cell(3),cell(4),ar('↓'),ar('↓'));
+  const a=cell(5);g.appendChild(a);
+  const e=document.createElement('div');e.className='empty-cell';e.textContent='Aucune carte ici : rien à modifier';g.appendChild(e);
+  const m=document.createElement('div');m.className='arrow merge';m.setAttribute('aria-hidden','true');const l=document.createElement('div');l.className='arrow';l.textContent='↘';const rr=document.createElement('div');rr.className='arrow';rr.textContent='↙';m.append(l,rr);g.appendChild(m);
+  g.append(cell(6,'center'),ar('↓',1),cell(7,'center'));
+ },
+ tests:[
+  {v:80,path:[0,1,2,4,6,7],yes:false,out:80},{v:100,path:[0,1,2,4,6,7],yes:false,out:100},
+  {v:150,path:[0,1,2,3,5,6,7],yes:true,out:135,act:135},{v:200,path:[0,1,2,3,5,6,7],yes:true,out:180,act:180}],
+ chip:v=>'prix = '+v,
+ line(key,t){
+  if(key==='lire')return 'Lecture : prix vaut '+t.v+'.';
+  if(key==='test')return 'Test : '+t.v+' > 100 ? Réponse : '+(t.yes?'OUI':'NON')+'.'+(t.v===100?' (100 n\'est pas supérieur à 100.)':'');
+  if(key==='action')return 'Action : prix vaut maintenant '+t.act+'.';
+  if(key==='afficher')return 'Affichage : '+t.out+'.';
+  if(key==='fin')return 'Fin.';return null;},
+ win:'Bravo, l\'algorithme est complet. Il reste une carte dans la réserve : c\'est l\'intruse. Pourquoi ne convient-elle pas ?'
+}];
+function split(ar){const sp=document.createElement('div');sp.className='arrow split';sp.setAttribute('aria-hidden','true');const l=ar('↙'),r=ar('↘');sp.append(l,r);return sp;}
+let L=LEVELS[0],lvl=0,slots,pool,locked,sel,wrong,timer;
+function shape(kind){
+  const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox','0 0 100 50');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('aria-hidden','true');
+  let el;
+  if(kind==='oval'||kind==='rect'||kind==='label'){el=document.createElementNS(NS,'rect');
+    el.setAttribute('x',2);el.setAttribute('y',3);el.setAttribute('width',96);el.setAttribute('height',44);
+    el.setAttribute('rx',kind==='oval'?22:(kind==='label'?10:1));}
+  else{el=document.createElementNS(NS,'polygon');
+    el.setAttribute('points',kind==='para'?'14,3 98,3 86,47 2,47':'50,1 98,25 50,49 2,25');}
+  el.setAttribute('class','shape');svg.appendChild(el);return svg;
+}
+function mk(id){
+  const d=L.C[id],el=document.createElement('div');
+  el.className='card '+d.kind+(locked.has(id)?' locked':'')+(sel===id?' sel':'')+(wrong.has(id)?' wrong':'');
+  el.dataset.id=id;el.tabIndex=0;el.setAttribute('role','button');
+  el.setAttribute('aria-label',d.t+(locked.has(id)?' (verrouillée)':''));
+  const t=document.createElement('div');t.className='txt';t.textContent=d.t;
+  el.append(shape(d.kind),t);
+  if(!locked.has(id)) bind(el,id);
+  return el;
+}
+function setLevel(n){
+  lvl=n;L=LEVELS[n];
+  document.querySelectorAll('.lvl').forEach(b=>b.classList.toggle('on',Number(b.dataset.lvl)===n));
+  $('tag').textContent=L.tag;$('h1').textContent=L.h1;$('intro').innerHTML=L.intro;
+  init();
+}
+function init(){
+  clearTimeout(timer);
+  slots=Array(L.S.length).fill(null);pool=L.START.slice();locked=new Set();sel=null;wrong=new Set();
+  $('msg').textContent='';$('msg').className='msg';$('test').classList.remove('show');$('out').textContent='Choisissez une donnée.';
+  render();
+}
+function render(){
+  const g=$('diagram');g.textContent='';
+  const ar=(txt,full)=>{const a=document.createElement('div');a.className='arrow';a.setAttribute('aria-hidden','true');a.textContent=txt;if(full)a.style.gridColumn='1/-1';return a;};
+  const slotEl=i=>{
+    const id=slots[i],s=document.createElement('div');
+    s.className='slot'+(id!==null&&locked.has(id)?' locked':'');s.dataset.slot=i;s.tabIndex=0;s.id='s'+i;
+    s.setAttribute('aria-label','Emplacement '+(i+1));
+    s.addEventListener('click',e=>{if(e.target.closest('.card'))return;if(sel!==null)place(sel,i);});
+    s.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel!==null){e.preventDefault();place(sel,i);}});
+    if(id!==null)s.appendChild(mk(id));
+    else{const l=document.createElement('div');l.className='lbl';l.textContent=i+1;s.appendChild(l);}
+    return s;
+  };
+  const cell=(i,cls)=>{const c=document.createElement('div');c.className='cell '+(cls||'');c.appendChild(slotEl(i));return c;};
+  L.build(cell,ar,g);
+  const p=$('pool');p.textContent='';
+  if(!pool.length){const e=document.createElement('div');e.className='empty';e.textContent='Toutes les cartes sont dans le schéma. Cliquez sur Valider.';p.appendChild(e);}
+  pool.forEach(id=>p.appendChild(mk(id)));
+  $('score').textContent=locked.size+' / '+L.S.length+' verrouillées';
+}
+function loc(id){const i=slots.indexOf(id);return i>=0?{slot:i}:{pool:pool.indexOf(id)};}
+function place(id,target){
+  if(locked.has(id))return;
+  wrong.clear();
+  const src=loc(id);
+  if(target==='pool'){
+    if(src.slot===undefined)return;
+    slots[src.slot]=null;pool.push(id);
+  }else{
+    const occ=slots[target];
+    if(occ===id){sel=null;render();return;}
+    if(occ!==null&&locked.has(occ))return;
+    if(src.slot!==undefined){slots[src.slot]=occ;}
+    else{if(occ!==null)pool[src.pool]=occ;else pool.splice(src.pool,1);}
+    slots[target]=id;
+  }
+  sel=null;render();
+}
+function toggle(id){const at=slots.indexOf(id);if(sel!==null&&sel!==id&&at>=0){place(sel,at);return;}sel=(sel===id)?null:id;render();}
+function bind(el,id){
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle(id);}});
+  el.addEventListener('pointerdown',e=>{
+    if(e.button>0)return;
+    const sx=e.clientX,sy=e.clientY,r=el.getBoundingClientRect();
+    const ox=sx-r.left,oy=sy-r.top;let ghost=null,over=null;
+    const mv=ev=>{
+      if(!ghost){
+        if(Math.hypot(ev.clientX-sx,ev.clientY-sy)<6)return;
+        ghost=el.cloneNode(true);ghost.className='card ghost '+L.C[id].kind;ghost.style.width=r.width+'px';ghost.style.height=r.height+'px';
+        document.body.appendChild(ghost);el.classList.add('dragging');
+      }
+      ghost.style.left=(ev.clientX-ox)+'px';ghost.style.top=(ev.clientY-oy)+'px';
+      const t=document.elementFromPoint(ev.clientX,ev.clientY);
+      const z=t&&t.closest('[data-slot],[data-pool]');
+      if(over!==z){if(over)over.classList.remove('over');over=z;if(over)over.classList.add('over');}
+    };
+    const up=ev=>{
+      document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);
+      if(over)over.classList.remove('over');
+      if(ghost){ghost.remove();
+        if(ev.type==='pointerup'&&over){place(id,over.dataset.pool?'pool':Number(over.dataset.slot));}else render();
+      }else if(ev.type==='pointerup'){toggle(id);}
+    };
+    document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);
+  });
+}
+$('pool').addEventListener('click',e=>{if(sel!==null&&!e.target.closest('.card'))place(sel,'pool');});
+$('validate').addEventListener('click',()=>{
+  wrong.clear();let placed=0;
+  slots.forEach((id,i)=>{if(id===null)return;placed++;if(L.C[id].key===L.S[i])locked.add(id);else wrong.add(id);});
+  render();
+  const m=$('msg'),n=L.S.length;
+  if(locked.size===n){
+    m.className='msg good';m.textContent=L.win;
+    buildTest();$('test').classList.add('show');
+  }else if(placed<n){
+    m.className='msg warn';m.textContent=(n-placed)+' emplacement(s) vide(s).'+(wrong.size?' '+wrong.size+' carte(s) à revoir (en rouge).':'');
+  }else{
+    m.className='msg warn';m.textContent=wrong.size+' carte(s) à revoir, en rouge. Suivez le chemin dans votre tête : que fait l\'ordinateur après chaque carte ?';
+  }
+});
+function buildTest(){
+  const ch=$('chips');ch.textContent='';
+  L.tests.forEach((t,n)=>{
+    const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=L.chip(t.v);
+    b.addEventListener('click',()=>run(n,b));ch.appendChild(b);
+  });
+}
+function run(n,btn){
+  clearTimeout(timer);
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===btn));
+  document.querySelectorAll('.slot.lit').forEach(s=>s.classList.remove('lit'));
+  const t=L.tests[n],out=$('out');let step=0;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const lines=[];
+  const tick=()=>{
+    const si=t.path[step],key=L.S[si];
+    $('s'+si).classList.add('lit');
+    const ln=L.line(key,t);if(ln)lines.push(ln);
+    out.textContent=lines.join('\n');out.style.whiteSpace='pre-line';
+    step++;
+    if(step<t.path.length)timer=setTimeout(tick,reduce?0:550);
+    else{out.textContent='';const p=document.createElement('div');p.style.whiteSpace='pre-line';p.textContent=lines.join('\n');
+      const r=document.createElement('div');r.style.marginTop='6px';r.append('Résultat : ');const b=document.createElement('b');b.textContent=String(t.out);r.appendChild(b);out.append(p,r);}
+  };
+  tick();
+}
+$('reset').addEventListener('click',init);
+document.querySelectorAll('.lvl').forEach(b=>b.addEventListener('click',()=>setLevel(Number(b.dataset.lvl))));
+setLevel(0);
+</script>
+
+</body></html>

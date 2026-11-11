@@ -1,0 +1,214 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dominos du compteur</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: chaîne verticale de 9 emplacements à gauche, réserve de dominos mélangés à droite (empilées sur téléphone). */
+:root{
+  --bg:#F5F6F6; --surface:#FFFFFF; --ink:#12171A; --muted:#4A545A; --line:#12171A;
+  --soft:#E6E9EB; --accent:#0C6A53; --accent-ink:#FFFFFF;
+  --ok:#1E7B3C; --ok-bg:#DDF1E3; --bad:#B3261E; --bad-bg:#FBE4E1; --sel:#0C6A53;
+  --display:'Bricolage Grotesque','Helvetica Neue',Arial,sans-serif;
+  --body:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171A; --surface:#1B2226; --ink:#E9EEF0; --muted:#9AA6AC; --line:#8D9AA1;
+  --soft:#2A343A; --accent:#4CC3A2; --accent-ink:#0B1A15;
+  --ok:#6FD38C; --ok-bg:#1B3A27; --bad:#FF8A80; --bad-bg:#43211E; --sel:#4CC3A2; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171A; --surface:#1B2226; --ink:#E9EEF0; --muted:#9AA6AC; --line:#8D9AA1;
+  --soft:#2A343A; --accent:#4CC3A2; --accent-ink:#0B1A15;
+  --ok:#6FD38C; --ok-bg:#1B3A27; --bad:#FF8A80; --bad-bg:#43211E; --sel:#4CC3A2; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1020px;margin:0 auto}
+.tag{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 10px;text-wrap:balance}
+.intro{max-width:66ch;margin:0 0 18px;color:var(--muted)}
+.intro strong{color:var(--ink)}
+.bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:18px}
+button{font:inherit;font-weight:600;cursor:pointer;border-radius:6px;padding:10px 18px;border:2px solid var(--ink);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:focus-visible,.domino:focus-visible,.slot:focus-visible,.pool:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.score{font-family:var(--mono);font-size:14px;font-weight:600;margin-left:auto}
+.msg{min-height:24px;font-weight:500;margin:0 0 14px}
+.msg.good{color:var(--ok)} .msg.warn{color:var(--bad)}
+.cols{display:flex;flex-direction:column;gap:26px}
+.col h2{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin:0 0 8px;color:var(--muted)}
+.chain{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px 14px}
+.row{display:flex;align-items:stretch;gap:8px}
+.num{flex:none;width:24px;font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.slot{flex:1;min-width:0;min-height:76px;border:2px dashed var(--line);border-radius:8px;background:transparent;display:flex}
+.slot.over{background:var(--soft);border-style:solid}
+.pool{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px 14px;min-height:120px;padding:10px;border:2px dashed var(--line);border-radius:8px}
+.pool.over{background:var(--soft);border-style:solid}
+.pool .empty{grid-column:1/-1;margin:auto;color:var(--muted);font-size:14px;text-align:center;padding:16px}
+.domino{flex:1;min-width:0;min-height:72px;display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:2px solid var(--ink);border-radius:8px;overflow:hidden;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;position:relative}
+.slot .domino{border:0;border-radius:6px}
+.domino .fr,.domino .js{padding:8px 10px;display:flex;align-items:center;min-width:0}
+.domino .fr{font-size:13.5px;line-height:1.3}
+.domino .js{font-family:var(--mono);font-size:12px;line-height:1.35;border-left:2px solid var(--ink);overflow-wrap:anywhere}
+.domino .big{font-family:var(--display);font-weight:800;font-size:19px}
+.domino.sel{outline:3px solid var(--sel);outline-offset:1px}
+.domino.dragging{opacity:.35}
+.domino.wrong{background:var(--bad-bg);animation:shake .35s}
+.domino.locked{background:var(--ok-bg);border-color:var(--ok);cursor:default;touch-action:auto}
+.slot.locked{border-style:solid;border-color:var(--ok)}
+.domino.locked .js{border-left-color:var(--ok);padding-right:22px}
+.domino.locked::after{content:"✓";position:absolute;top:2px;right:6px;color:var(--ok);font-weight:700;font-size:14px}
+.ghost{position:fixed;z-index:50;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3);transform:rotate(-1.5deg);opacity:.95}
+.result{margin-top:26px;display:none}
+.result.show{display:block}
+.result h2{font-family:var(--display);font-size:22px;margin:0 0 8px}
+pre{margin:0;padding:12px 16px;background:var(--surface);border:2px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:13.5px;line-height:1.5;overflow-x:auto}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (max-width:760px){.col.poolcol{order:-1}}
+@media (prefers-reduced-motion:reduce){.domino.wrong{animation:none}}
+</style>
+
+<div class="wrap">
+  <div class="tag">Révision n°3 · Dominos</div>
+  <h1>Du français au JavaScript</h1>
+  <p class="intro">Glissez les dominos de la réserve vers la chaîne pour former <strong>une seule chaîne de DÉPART à ARRIVÉE</strong>. À chaque jonction, le code d'un domino doit répondre à la description en français du domino suivant. Sur téléphone ou au clavier, touchez un domino puis touchez son emplacement. Cliquez sur <strong>Valider</strong> : les dominos bien placés deviennent verts et se verrouillent.</p>
+  <div class="bar">
+    <button id="validate" class="primary" type="button">Valider</button>
+    <button id="reset" type="button">Mélanger et recommencer</button>
+    <span class="score" id="score" aria-live="polite">0 / 9 verrouillés</span>
+  </div>
+  <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  <div class="cols">
+    <section class="col">
+      <h2>La chaîne : de gauche à droite, puis à la ligne</h2>
+      <div class="chain" id="chain"></div>
+    </section>
+    <section class="col poolcol">
+      <h2>Réserve de dominos</h2>
+      <div class="pool" id="pool" data-pool="1" tabindex="0" aria-label="Réserve de dominos"></div>
+    </section>
+  </div>
+  <div class="result" id="result">
+    <h2>Le code obtenu</h2>
+    <pre id="code"></pre>
+  </div>
+</div>
+
+<script>
+const D=[
+ {fr:'DÉPART',js:'<p id="score">0</p>',big:'fr'},
+ {fr:'Un paragraphe qui affiche le nombre, avec l\'id "score"',js:'<button onclick="ajouter()">+1</button>'},
+ {fr:'Un bouton qui appelle la fonction ajouter au clic',js:'<script src="script.js"><\/script>'},
+ {fr:'Relier le fichier script.js à la page',js:'let compteur = 0;'},
+ {fr:'Créer la variable globale compteur, avec 0 au départ',js:'function ajouter() {'},
+ {fr:'Déclarer une fonction nommée ajouter',js:'compteur = compteur + 1;'},
+ {fr:'Ajouter 1 à la variable compteur',js:'document.getElementById("score").innerHTML = compteur;'},
+ {fr:'Récupérer l\'élément d\'id "score" et remplacer son texte par la valeur de compteur',js:'}'},
+ {fr:'Fermer la fonction',js:'ARRIVÉE',big:'js'}
+];
+const START=[5,1,8,3,6,0,4,7,2];
+let slots,pool,locked,sel,wrongSet;
+const $=id=>document.getElementById(id);
+
+function init(){
+  slots=Array(9).fill(null); pool=START.slice(); locked=new Set(); sel=null; wrongSet=new Set();
+  $('msg').textContent=''; $('msg').className='msg'; $('result').classList.remove('show');
+  render();
+}
+function mk(id){
+  const d=D[id],el=document.createElement('div');
+  el.className='domino'+(locked.has(id)?' locked':'')+(sel===id?' sel':'')+(wrongSet.has(id)?' wrong':'');
+  el.dataset.id=id; el.tabIndex=0; el.setAttribute('role','button');
+  const a=document.createElement('div'),b=document.createElement('div');
+  a.className='fr'+(d.big==='fr'?' big':''); b.className='js'+(d.big==='js'?' big':'');
+  a.textContent=d.fr; b.textContent=d.js; el.append(a,b);
+  el.setAttribute('aria-label',d.fr+' | '+d.js+(locked.has(id)?' (verrouillé)':''));
+  if(!locked.has(id)) bind(el,id);
+  return el;
+}
+function render(){
+  const ch=$('chain'); ch.textContent='';
+  slots.forEach((id,i)=>{
+    const row=document.createElement('div'); row.className='row';
+    const n=document.createElement('div'); n.className='num'; n.textContent=i+1;
+    const s=document.createElement('div'); s.className='slot'+(id!==null&&locked.has(id)?' locked':''); s.dataset.slot=i;
+    s.tabIndex=0; s.setAttribute('aria-label','Emplacement '+(i+1));
+    s.addEventListener('click',e=>{ if(e.target.closest('.domino')) return; if(sel!==null) place(sel,i); });
+    s.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&sel!==null){e.preventDefault();place(sel,i);} });
+    if(id!==null) s.appendChild(mk(id));
+    row.append(n,s); ch.appendChild(row);
+  });
+  const p=$('pool'); p.textContent='';
+  if(!pool.length){const e=document.createElement('div');e.className='empty';e.textContent='Tous les dominos sont dans la chaîne. Cliquez sur Valider.';p.appendChild(e);}
+  pool.forEach(id=>p.appendChild(mk(id)));
+  $('score').textContent=locked.size+' / 9 verrouillés';
+}
+function loc(id){ const i=slots.indexOf(id); return i>=0?{slot:i}:{pool:pool.indexOf(id)}; }
+function place(id,target){
+  if(locked.has(id)) return;
+  wrongSet.clear();
+  const src=loc(id);
+  if(target==='pool'){
+    if(src.slot===undefined) return;
+    slots[src.slot]=null; pool.push(id);
+  }else{
+    const occ=slots[target];
+    if(occ===id) {sel=null;render();return;}
+    if(occ!==null&&locked.has(occ)) return;
+    if(src.slot!==undefined){ slots[src.slot]=occ; }
+    else { if(occ!==null) pool[src.pool]=occ; else pool.splice(src.pool,1); }
+    slots[target]=id;
+  }
+  sel=null; render();
+}
+function bind(el,id){
+  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle(id);} });
+  el.addEventListener('pointerdown',e=>{
+    if(e.button>0) return;
+    const sx=e.clientX,sy=e.clientY,r=el.getBoundingClientRect();
+    const ox=sx-r.left,oy=sy-r.top; let ghost=null,over=null;
+    const mv=ev=>{
+      if(!ghost){
+        if(Math.hypot(ev.clientX-sx,ev.clientY-sy)<6) return;
+        ghost=el.cloneNode(true); ghost.className='domino ghost'; ghost.style.width=r.width+'px'; ghost.style.height=r.height+'px';
+        document.body.appendChild(ghost); el.classList.add('dragging');
+      }
+      ghost.style.left=(ev.clientX-ox)+'px'; ghost.style.top=(ev.clientY-oy)+'px';
+      const t=document.elementFromPoint(ev.clientX,ev.clientY);
+      const z=t&&t.closest('[data-slot],[data-pool]');
+      if(over!==z){ if(over) over.classList.remove('over'); over=z; if(over) over.classList.add('over'); }
+    };
+    const up=ev=>{
+      document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); document.removeEventListener('pointercancel',up);
+      if(over) over.classList.remove('over');
+      if(ghost){
+        ghost.remove();
+        if(ev.type==='pointerup'&&over){ place(id,over.dataset.pool?'pool':Number(over.dataset.slot)); } else render();
+      }else if(ev.type==='pointerup'){ toggle(id); }
+    };
+    document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up); document.addEventListener('pointercancel',up);
+  });
+}
+function toggle(id){ const at=slots.indexOf(id); if(sel!==null&&sel!==id&&at>=0){ place(sel,at); return; } sel=(sel===id)?null:id; render(); }
+$('pool').addEventListener('click',e=>{ if(sel!==null&&!e.target.closest('.domino')) place(sel,'pool'); });
+$('validate').addEventListener('click',()=>{
+  wrongSet.clear(); let placed=0;
+  slots.forEach((id,i)=>{ if(id===null) return; placed++; if(id===i) locked.add(id); else wrongSet.add(id); });
+  render();
+  const m=$('msg');
+  if(locked.size===9){
+    m.className='msg good'; m.textContent='Bravo, la chaîne est complète. Tous les dominos sont verrouillés.';
+    $('code').textContent='<!-- page HTML -->\n'+D[0].js+'\n'+D[1].js+'\n'+D[2].js+'\n\n// script.js\n'+D[3].js+'\n'+D[4].js+'\n  '+D[5].js+'\n  '+D[6].js+'\n'+D[7].js;
+    $('result').classList.add('show');
+  }else if(placed<9){
+    m.className='msg warn'; m.textContent=(9-placed)+' domino(s) restent dans la réserve. '+(wrongSet.size?wrongSet.size+' à revoir (en rouge).':'');
+  }else{
+    m.className='msg warn'; m.textContent=wrongSet.size+' domino(s) à revoir, en rouge. Relisez chaque jonction.';
+  }
+});
+$('reset').addEventListener('click',init);
+init();
+</script>
+
+</body></html>

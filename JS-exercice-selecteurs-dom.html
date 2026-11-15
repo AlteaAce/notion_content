@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Révision · Les sélecteurs DOM</title>
+<style>
+:root{
+  --bg:#f5f3fb;--surface:#fff;--ink:#24213a;--muted:#77748d;
+  --line:#e7e3f1;--purple:#7256c9;--purple-dark:#5038a3;
+  --purple-soft:#eee9fc;--green:#21845b;--green-soft:#e4f5ec;
+  --red:#b84c5a;--red-soft:#fbeaec;--yellow:#f1bd58;
+  --shadow:0 12px 34px rgba(53,39,93,.08);--radius:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,select,input,textarea{font:inherit}
+button{cursor:pointer}
+.top{background:linear-gradient(120deg,#30264f,#59428f 65%,#8067c9);color:white;padding:30px 22px 26px}
+.top-inner,.wrap{max-width:1080px;margin:auto}
+.eyebrow{font-size:.76rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.76}
+h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;margin:8px 0}
+.top p{max-width:720px;margin:10px 0 0;color:#e8e1fa}
+.wrap{padding:24px 18px 60px}
+.tabs{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 20px}
+.tab{border:1px solid var(--line);background:#fff;color:var(--muted);padding:10px 16px;border-radius:12px;font-weight:750}
+.tab.active{background:var(--purple);border-color:var(--purple);color:white;box-shadow:0 5px 14px #7256c933}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(17px,3vw,27px);box-shadow:var(--shadow);margin-bottom:18px}
+h2{font-size:1.35rem;margin:0 0 5px}
+.lead{color:var(--muted);margin:0 0 20px}
+.pill{display:inline-flex;align-items:center;background:var(--purple-soft);color:var(--purple-dark);padding:4px 9px;border-radius:999px;font-size:.75rem;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.match-card{border:1px solid var(--line);border-radius:14px;padding:15px;background:#fff}
+.match-card h3{font-size:1rem;margin:0 0 11px;color:var(--purple-dark)}
+label{display:block;font-weight:750;font-size:.83rem;margin:10px 0 5px}
+select,input,textarea{width:100%;border:1px solid #dcd6eb;border-radius:10px;background:#fff;padding:10px 11px;color:var(--ink);outline:none}
+select:focus,input:focus,textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px #7256c922}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+.btn{border:0;border-radius:11px;padding:10px 15px;font-weight:800;background:var(--purple);color:white}
+.btn:hover{background:var(--purple-dark)}
+.btn.secondary{background:#f0edf7;color:#51486d}
+.btn.secondary:hover{background:#e6e0f2}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.feedback{margin-top:15px;padding:12px 14px;border-radius:11px;display:none;font-weight:700}
+.feedback.show{display:block}.feedback.good{background:var(--green-soft);color:var(--green)}.feedback.bad{background:var(--red-soft);color:var(--red)}
+.scoreline{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 15px}
+.score{font-weight:850;color:var(--purple-dark)}
+.progress{height:8px;background:#eeeaf5;border-radius:99px;overflow:hidden;margin:9px 0 18px}
+.progress span{height:100%;display:block;background:var(--purple);width:0;transition:width .25s}
+.lab-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.editor{min-height:260px;font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical;background:#211d32;color:#eee9ff;border:1px solid #39314f}
+.preview{background:#fbfaff;border:1px solid var(--line);border-radius:12px;padding:14px;min-height:180px;overflow:auto}
+.preview .picked{outline:3px solid var(--yellow);outline-offset:2px;background:#fff4d9!important;border-radius:3px}
+.preview button,.preview a{cursor:pointer}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.result{background:#211d32;color:#eee9ff;border-radius:12px;padding:14px;min-height:90px;overflow:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.result .dim{color:#aaa2c1}
+.explain{font-size:.88rem;color:var(--muted);margin-top:9px}
+.method-note{background:#fff8e8;border:1px solid #f2dfb2;border-radius:11px;padding:11px 13px;color:#6e5520;font-size:.88rem;margin:13px 0}
+.hidden{display:none!important}
+.footer{text-align:center;color:var(--muted);font-size:.8rem;margin:24px 0 0}
+@media(max-width:720px){.grid,.lab-grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.top{padding:24px 18px}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="top-inner">
+  <div class="eyebrow">Révision · JavaScript · DOM</div>
+  <h1>À la recherche des éléments</h1>
+  <p>Apprends à choisir le bon sélecteur, à comprendre ce qu'il retourne et à vérifier son résultat directement dans une page HTML.</p>
+ </div>
+</header>
+<main class="wrap">
+ <nav class="tabs" aria-label="Activités">
+  <button class="tab active" data-tab="match">① Défi des associations</button>
+  <button class="tab" data-tab="lab">② Laboratoire des sélecteurs</button>
+ </nav>
+
+ <section id="match" class="panel">
+  <div class="scoreline"><div><span class="pill">MISSION 1</span></div><div class="score" id="score">0 / 15 bonnes réponses</div></div>
+  <h2>Relie les bonnes informations</h2>
+  <p class="lead">Pour chaque méthode, sélectionne sa fonction et ce qu'elle retourne. Tu peux valider quand tu as terminé.</p>
+  <div class="progress"><span id="progress"></span></div>
+  <div class="grid" id="cards"></div>
+  <div class="actions">
+   <button class="btn" id="check">Vérifier mes réponses</button>
+   <button class="btn secondary" id="reset">Recommencer</button>
+  </div>
+  <div class="feedback" id="matchFeedback" role="status"></div>
+ </section>
+
+ <section id="lab" class="panel hidden">
+  <span class="pill">MISSION 2</span>
+  <h2 style="margin-top:9px">Teste un sélecteur</h2>
+  <p class="lead">Modifie le HTML si tu le souhaites, choisis une méthode et observe précisément les éléments récupérés.</p>
+  <div class="method-note"><strong>À retenir :</strong> <code>querySelector()</code> retourne le premier élément correspondant. Les méthodes au pluriel retournent une collection, même si un seul élément correspond ou si aucun élément n'est trouvé.</div>
+  <div class="lab-grid">
+   <div>
+    <label for="htmlInput">HTML de départ (modifiable)</label>
+    <textarea id="htmlInput" class="editor" spellcheck="false"><section id="zone">
+  <h2 class="titre">Les animaux</h2>
+  <p class="info">Le chat dort.</p>
+  <p class="info">Le chien joue.</p>
+  <ul>
+    <li class="animal">Chat</li>
+    <li class="animal">Chien</li>
+    <li class="animal">Lapin</li>
+  </ul>
+  <button id="action">Découvrir</button>
+</section></textarea>
+    <div class="explain">Le code est interprété dans une zone de prévisualisation isolée de la page de l'exercice.</div>
+   </div>
+   <div>
+    <label>Aperçu du HTML</label>
+    <div id="preview" class="preview"></div>
+   </div>
+  </div>
+  <div style="margin-top:20px">
+   <div class="controls">
+    <div><label for="method">Méthode à utiliser</label>
+     <select id="method">
+      <option value="querySelector">querySelector()</option>
+      <option value="querySelectorAll">querySelectorAll()</option>
+      <option value="getElementById">getElementById()</option>
+      <option value="getElementsByClassName">getElementsByClassName()</option>
+      <option value="getElementsByTagName">getElementsByTagName()</option>
+     </select>
+    </div>
+    <div><label for="argument">Valeur recherchée</label><input id="argument" value=".info" placeholder="Ex. .info, titre, action"></div>
+   </div>
+   <div class="explain" id="syntax">Syntaxe : <code>document.querySelector(".info")</code></div>
+   <div class="actions"><button class="btn" id="run">Exécuter le sélecteur</button><button class="btn secondary" id="example">Tester un exemple</button></div>
+  </div>
+  <div style="margin-top:18px">
+   <label>Résultat récupéré</label>
+   <div class="result" id="result" aria-live="polite">Le résultat apparaîtra ici après l'exécution.</div>
+   <p class="explain" id="resultExplain">Astuce : observe la différence entre un élément unique et une collection d'éléments.</p>
+  </div>
+ </section>
+ <p class="footer">Exercice de révision · Sélecteurs du DOM</p>
+</main>
+<script>
+const methods = [
+ {name:"querySelector()",desc:"Cherche un élément à l'aide d'un sélecteur CSS.",ret:"Le premier élément correspondant (ou null). → élément simple"},
+ {name:"querySelectorAll()",desc:"Cherche tous les éléments correspondant à un sélecteur CSS.",ret:"Tous les éléments correspondants. → NodeList"},
+ {name:"getElementById()",desc:"Cherche un élément grâce à la valeur de son attribut id.",ret:"L'élément correspondant (ou null). → élément simple"},
+ {name:"getElementsByClassName()",desc:"Cherche tous les éléments qui possèdent une classe donnée.",ret:"Tous les éléments correspondants. → HTMLCollection"},
+ {name:"getElementsByTagName()",desc:"Cherche tous les éléments ayant une balise donnée.",ret:"Tous les éléments correspondants. → HTMLCollection"}
+];
+const descOptions = [
+ "Cherche un élément grâce à son ID.",
+ "Cherche tous les éléments ayant la même balise.",
+ "Cherche un élément à l'aide d'un sélecteur CSS.",
+ "Cherche tous les éléments correspondant à un sélecteur CSS.",
+ "Cherche tous les éléments qui possèdent une classe donnée."
+];
+const returnOptions = [
+ "Tous les éléments correspondants. → NodeList",
+ "L'élément correspondant (ou null). → élément simple",
+ "Tous les éléments correspondants. → HTMLCollection",
+ "Le premier élément correspondant (ou null). → élément simple"
+];
+const cards = document.getElementById("cards");
+const score = document.getElementById("score");
+const progress = document.getElementById("progress");
+const matchFeedback = document.getElementById("matchFeedback");
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function buildCards(){
+ cards.innerHTML="";
+ shuffle(methods).forEach((m,i)=>{
+  const d=document.createElement("article");d.className="match-card";
+  d.innerHTML=`<h3>${m.name}</h3><label for="d${i}">Ce qu'il fait</label><select id="d${i}" data-kind="desc"><option value="">Choisir une description…</option></select><label for="r${i}">Ce qu'il récupère</label><select id="r${i}" data-kind="ret"><option value="">Choisir un résultat…</option></select>`;
+  const ds=d.querySelector("#d"+i),rs=d.querySelector("#r"+i);
+  shuffle(descOptions).forEach((x)=>{let o=document.createElement("option");o.value=x;o.textContent=x;ds.append(o)});
+  shuffle(returnOptions).forEach((x)=>{let o=document.createElement("option");o.value=x;o.textContent=x;rs.append(o)});
+  d.dataset.method=m.name;cards.append(d);
+ });
+ score.textContent="0 / 10 bonnes réponses";progress.style.width="0%";matchFeedback.className="feedback";matchFeedback.textContent="";
+}
+buildCards();
+document.getElementById("check").addEventListener("click",()=>{
+ let good=0,answered=0,total=10;
+ [...cards.children].forEach(card=>{
+  const m=methods.find(x=>x.name===card.dataset.method);
+  const d=card.querySelector('[data-kind="desc"]'),r=card.querySelector('[data-kind="ret"]');
+  [[d,m.desc],[r,m.ret]].forEach(([el,answer])=>{
+   el.style.borderColor=el.value?(el.value===answer?"#21845b":"#b84c5a"):"#dcd6eb";
+   if(el.value)answered++;if(el.value===answer)good++;
+  });
+ });
+ score.textContent=`${good} / ${total} bonnes réponses`;
+ progress.style.width=(good/total*100)+"%";
+ matchFeedback.className="feedback show "+(good===total?"good":"bad");
+ matchFeedback.textContent=good===total?"Parfait ! Toutes les associations sont correctes.":`${good} bonne(s) réponse(s) sur ${total}. Les réponses incorrectes sont signalées en rouge. ${answered<total?"Il reste des réponses à compléter.": "Corrige les associations puis vérifie à nouveau."}`;
+});
+document.getElementById("reset").addEventListener("click",buildCards);
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b===btn));
+ document.getElementById("match").classList.toggle("hidden",btn.dataset.tab!=="match");
+ document.getElementById("lab").classList.toggle("hidden",btn.dataset.tab!=="lab");
+}));
+const htmlInput=document.getElementById("htmlInput"),preview=document.getElementById("preview");
+function render(){preview.innerHTML=htmlInput.value}
+htmlInput.addEventListener("input",render);render();
+const method=document.getElementById("method"),argument=document.getElementById("argument");
+const syntax=document.getElementById("syntax"),result=document.getElementById("result"),resultExplain=document.getElementById("resultExplain");
+function updateSyntax(){
+ const m=method.value,v=argument.value;
+ syntax.innerHTML=`Syntaxe : <code>document.${m}("${v.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")}")</code>`;
+}
+method.addEventListener("change",updateSyntax);argument.addEventListener("input",updateSyntax);
+function run(){
+ render();const m=method.value,v=argument.value.trim();preview.querySelectorAll(".picked").forEach(e=>e.classList.remove("picked"));
+ if(!v){result.textContent="Entre une valeur à rechercher.";return}
+ let found;
+ try{
+  if(m==="querySelector")found=preview.querySelector(v);
+  else if(m==="querySelectorAll")found=preview.querySelectorAll(v);
+  else if(m==="getElementById")found=preview.querySelectorAll("[id]").length?Array.from(preview.querySelectorAll("[id]")).find(e=>e.id===v)||null:null;
+  else if(m==="getElementsByClassName")found=preview.getElementsByClassName(v);
+  else found=preview.getElementsByTagName(v);
+ }catch(e){result.textContent="Sélecteur invalide : "+e.message;resultExplain.textContent="Vérifie la syntaxe de ton sélecteur.";return}
+ const isCollection=m==="querySelectorAll"||m==="getElementsByClassName"||m==="getElementsByTagName";
+ const items=isCollection?Array.from(found):found?[found]:[];
+ items.forEach(el=>el.classList.add("picked"));
+ const describe=el=>`<${el.tagName.toLowerCase()}${el.id?' id="'+el.id+'"':''}${el.className&&typeof el.className==="string"?' class="'+el.className+'"':''}>`;
+ if(isCollection){
+  result.textContent=`Type retourné : ${m==="querySelectorAll"?"NodeList":"HTMLCollection"}\nNombre d'éléments : ${found.length}\n\n`;
+  result.textContent+=found.length?items.map((el,i)=>`${i+1}. ${describe(el)}\n   Texte : "${el.textContent.trim().replace(/\s+/g," ")}"`).join("\n\n"):"Aucun élément trouvé. La collection est vide.";
+  resultExplain.textContent="Une collection est retournée. Même avec un seul résultat, le type reste une collection.";
+ }else{
+  result.textContent=`Type retourné : ${found?"élément HTML":"null"}\n\n`;
+  result.textContent+=found?`${describe(found)}\nTexte : "${found.textContent.trim().replace(/\s+/g," ")}"`:"Aucun élément trouvé : la méthode retourne null.";
+  resultExplain.textContent="Cette méthode retourne un seul élément (le premier correspondant pour querySelector) ou null si aucun élément n'est trouvé.";
+ }
+}
+document.getElementById("run").addEventListener("click",run);
+document.getElementById("example").addEventListener("click",()=>{
+ const examples=[
+  ["querySelector",".info"],["querySelectorAll",".animal"],["getElementById","action"],["getElementsByClassName","animal"],["getElementsByTagName","li"]
+ ];
+ const ex=examples[Math.floor(Math.random()*examples.length)];method.value=ex[0];argument.value=ex[1];updateSyntax();run();
+});
+updateSyntax();
+</script>
+</body>
+</html>

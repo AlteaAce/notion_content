@@ -141,11 +141,11 @@ select:focus,input:focus,textarea:focus{border-color:var(--purple);box-shadow:0 
 </main>
 <script>
 const methods = [
- {name:"querySelector()",desc:"Cherche un élément à l'aide d'un sélecteur CSS.",ret:"Le premier élément correspondant (ou null). → élément simple"},
- {name:"querySelectorAll()",desc:"Cherche tous les éléments correspondant à un sélecteur CSS.",ret:"Tous les éléments correspondants. → NodeList"},
- {name:"getElementById()",desc:"Cherche un élément grâce à la valeur de son attribut id.",ret:"L'élément correspondant (ou null). → élément simple"},
- {name:"getElementsByClassName()",desc:"Cherche tous les éléments qui possèdent une classe donnée.",ret:"Tous les éléments correspondants. → HTMLCollection"},
- {name:"getElementsByTagName()",desc:"Cherche tous les éléments ayant une balise donnée.",ret:"Tous les éléments correspondants. → HTMLCollection"}
+ {name:"querySelector()",desc:"Cherche un élément à l'aide d'un sélecteur CSS.",ret:"Le premier élément correspondant. → objet simple"},
+ {name:"querySelectorAll()",desc:"Cherche tous les éléments correspondant à un sélecteur CSS.",ret:"Tous les éléments correspondants. → liste d'objets"},
+ {name:"getElementById()",desc:"Cherche un élément grâce à la valeur de son attribut id.",ret:"L'élément correspondant. → objet simple"},
+ {name:"getElementsByClassName()",desc:"Cherche tous les éléments qui possèdent une classe donnée.",ret:"Tous les éléments correspondants. → liste d'objets"},
+ {name:"getElementsByTagName()",desc:"Cherche tous les éléments ayant une balise donnée.",ret:"Tous les éléments correspondants. → liste d'objets"}
 ];
 const descOptions = [
  "Cherche un élément grâce à son ID.",
@@ -155,9 +155,9 @@ const descOptions = [
  "Cherche tous les éléments qui possèdent une classe donnée."
 ];
 const returnOptions = [
- "Tous les éléments correspondants. → liste d'éléments",
- "L'élément correspondant. → élément simple",
- "Le premier élément correspondant. → élément simple"
+ "Tous les éléments correspondants. → liste d'objets",
+ "L'élément correspondant. → objet simple",
+ "Le premier élément correspondant. → objet simple"
 ];
 const cards = document.getElementById("cards");
 const score = document.getElementById("score");

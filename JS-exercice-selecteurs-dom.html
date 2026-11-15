@@ -38,8 +38,8 @@ select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
 .btn{border:0;border-radius:6px;padding:10px 15px;font-weight:800;background:var(--accent);color:white}
 .btn:hover{background:var(--ink)}
-.btn.secondary{background:#f0edf7;color:#51486d}
-.btn.secondary:hover{background:#e6e0f2}
+.btn.secondary{background:#fff;color:var(--ink);border:2px solid var(--ink);}
+.btn.secondary:hover{background:var(--ink);color:#ffffff;}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .feedback{margin-top:15px;padding:12px 14px;border-radius:6px;display:none;font-weight:700}
 .feedback.show{display:block}.feedback.good{background:var(--green-soft);color:var(--green)}.feedback.bad{background:var(--red-soft);color:var(--red)}
